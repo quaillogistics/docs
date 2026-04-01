@@ -16,5 +16,6 @@ Every response includes rate limit headers:
 | `X-RateLimit-Limit` | Max requests per window |
 | `X-RateLimit-Remaining` | Requests left in current window |
 | `X-RateLimit-Reset` | Unix timestamp when window resets |
+| `Retry-After` | Seconds to wait before retrying (only on `429` responses) |
 
 When you exceed the limit, the API returns a `429` status with error code `RATE_LIMITED`.

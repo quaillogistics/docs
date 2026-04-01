@@ -14,21 +14,47 @@ import requests
 resp = requests.get("https://api.dotlookup.dev/v1/carriers/2233855")
 carrier = resp.json()
 print(f"{carrier['legal_name']} — {carrier['status']}")
+print(f"  Fleet: {carrier['fleet']['power_units']} trucks, {carrier['fleet']['drivers']} drivers")
+print(f"  Safety rating: {carrier['safety']['rating']}")
 
-# Search carriers
+# Search carriers with filters
 resp = requests.get("https://api.dotlookup.dev/v1/carriers/search", params={
     "q": "swift",
     "state": "TX",
     "fleet_min": 10,
+    "sort": "fleet_size_desc",
 })
 results = resp.json()
 for c in results["data"]:
-    print(f"  {c['dot_number']} {c['legal_name']}")
+    print(f"  DOT# {c['dot_number']} {c['legal_name']} — {c['power_units']} units")
+
+# Geo search — carriers within 25 miles of Dallas
+resp = requests.get("https://api.dotlookup.dev/v1/carriers/search", params={
+    "lat": 32.7767,
+    "lon": -96.797,
+    "radius": 25,
+    "sort": "distance",
+})
+results = resp.json()
+for c in results["data"]:
+    print(f"  {c['legal_name']} — {c['distance_miles']:.1f} mi away")
+
+# Safety data
+resp = requests.get("https://api.dotlookup.dev/v1/carriers/2233855/safety")
+safety = resp.json()
+print(f"Driver OOS rate: {safety['inspections']['driver']['oos_rate']}%")
+print(f"Total crashes: {safety['crashes']['total']}")
+
+# Sign up for an API key
+resp = requests.post("https://api.dotlookup.dev/v1/auth/signup", json={
+    "email": "you@example.com",
+})
+api_key = resp.json()["api_key"]
 
 # Bulk lookup (requires API key)
 resp = requests.post(
     "https://api.dotlookup.dev/v1/carriers/bulk",
-    headers={"X-API-Key": "your_api_key"},
+    headers={"X-API-Key": api_key},
     json={"dot_numbers": ["2233855", "1234567"]},
 )
 carriers = resp.json()
@@ -43,12 +69,15 @@ for c in carriers:
 const resp = await fetch("https://api.dotlookup.dev/v1/carriers/2233855");
 const carrier = await resp.json();
 console.log(`${carrier.legal_name} — ${carrier.status}`);
+console.log(`  Fleet: ${carrier.fleet.power_units} trucks`);
+console.log(`  Cargo: ${carrier.cargo_carried.join(", ")}`);
 
 // Search carriers
 const params = new URLSearchParams({ q: "swift", state: "TX", fleet_min: "10" });
 const searchResp = await fetch(`https://api.dotlookup.dev/v1/carriers/search?${params}`);
-const { data } = await searchResp.json();
-data.forEach(c => console.log(`  ${c.dot_number} ${c.legal_name}`));
+const { data, pagination } = await searchResp.json();
+console.log(`Found ${pagination.total} carriers`);
+data.forEach(c => console.log(`  ${c.dot_number} ${c.legal_name} (${c.safety_rating})`));
 
 // Bulk lookup (requires API key)
 const bulkResp = await fetch("https://api.dotlookup.dev/v1/carriers/bulk", {
@@ -60,6 +89,13 @@ const bulkResp = await fetch("https://api.dotlookup.dev/v1/carriers/bulk", {
   body: JSON.stringify({ dot_numbers: ["2233855", "1234567"] }),
 });
 const carriers = await bulkResp.json();
+
+// Check your usage
+const meResp = await fetch("https://api.dotlookup.dev/v1/auth/me", {
+  headers: { "X-API-Key": "your_api_key" },
+});
+const { account, usage } = await meResp.json();
+console.log(`Requests today: ${usage.requests_today}`);
 ```
 
 ## Go
@@ -83,15 +119,19 @@ func main() {
 	fmt.Printf("%s — %s\n", carrier["legal_name"], carrier["status"])
 
 	// Search carriers
-	resp, _ = http.Get("https://api.dotlookup.dev/v1/carriers/search?q=swift&state=TX")
+	resp, _ = http.Get("https://api.dotlookup.dev/v1/carriers/search?q=swift&state=TX&sort=fleet_size_desc")
 	defer resp.Body.Close()
 
 	var result struct {
 		Data []map[string]any `json:"data"`
+		Pagination struct {
+			Total int `json:"total"`
+		} `json:"pagination"`
 	}
 	json.NewDecoder(resp.Body).Decode(&result)
+	fmt.Printf("Found %d carriers\n", result.Pagination.Total)
 	for _, c := range result.Data {
-		fmt.Printf("  %s %s\n", c["dot_number"], c["legal_name"])
+		fmt.Printf("  DOT# %s %s\n", c["dot_number"], c["legal_name"])
 	}
 }
 ```

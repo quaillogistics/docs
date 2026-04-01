@@ -22,6 +22,8 @@ All errors return JSON with an `error` object containing `code` and `message` fi
 |------|-------------|-------------|
 | `NOT_FOUND` | 404 | Resource doesn't exist |
 | `INVALID_PARAM` | 400 | Bad request parameter |
+| `INVALID_BODY` | 400 | Invalid JSON request body |
+| `ACCOUNT_EXISTS` | 409 | Account with this email already exists |
 | `RATE_LIMITED` | 429 | Too many requests |
 | `UNAUTHORIZED` | 401 | Missing or invalid API key |
 | `INTERNAL_ERROR` | 500 | Server error |

@@ -44,6 +44,14 @@
             ]
           },
           {
+            "group": "Account",
+            "pages": [
+              "endpoints/signup",
+              "endpoints/login",
+              "endpoints/account"
+            ]
+          },
+          {
             "group": "System",
             "pages": [
               "endpoints/health",

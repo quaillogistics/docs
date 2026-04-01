@@ -6,10 +6,14 @@ description: Paginated carrier search with text, filters, and geo/radius support
 
 Paginated search with text, filters, and optional geo/radius support.
 
+<Note>
+  When using geo search (`lat`/`lon`), each result includes a `distance_miles` field with the distance from the search point.
+</Note>
+
 ## Query Parameters
 
 <ParamField query="q" type="string">
-  Text search (carrier name)
+  Text search (matches legal name and DBA name)
 </ParamField>
 
 <ParamField query="mc_number" type="string">
@@ -25,7 +29,7 @@ Paginated search with text, filters, and optional geo/radius support.
 </ParamField>
 
 <ParamField query="status" type="string" default="ACTIVE">
-  Filter by status
+  Filter by carrier status. Use `ALL` to include inactive carriers
 </ParamField>
 
 <ParamField query="cargo" type="string">
@@ -52,8 +56,12 @@ Paginated search with text, filters, and optional geo/radius support.
   Search radius in miles (max: 200)
 </ParamField>
 
+<ParamField query="authority_months_min" type="integer">
+  Minimum months of active authority (filters by common authority date)
+</ParamField>
+
 <ParamField query="sort" type="string">
-  Sort by `name`, `fleet_size`, or `distance`
+  Sort field and direction. Options: `name`, `name_asc`, `name_desc`, `dot`, `dot_asc`, `dot_desc`, `fleet_size`, `fleet_size_asc`, `fleet_size_desc`, `distance`, `distance_asc`, `distance_desc` (distance options require geo search)
 </ParamField>
 
 <ParamField query="page" type="integer" default="1">
@@ -93,12 +101,23 @@ const results = await resp.json();
   "data": [
     {
       "dot_number": "2233855",
+      "mc_number": "747866",
       "legal_name": "SWIFT TRANSPORTATION CO",
+      "dba_name": "",
       "city": "Dallas",
       "state": "TX",
       "status": "ACTIVE",
       "power_units": 45,
-      "drivers": 52
+      "drivers": 52,
+      "safety_rating": "Satisfactory",
+      "vehicle_oos_rate": 18.3,
+      "vehicle_oos_national": 20.72,
+      "driver_oos_rate": 5.2,
+      "driver_oos_national": 5.51,
+      "insurance_bipd": 1000000,
+      "insurance_cargo": 250000,
+      "lat": 32.7767,
+      "lon": -96.797
     }
   ],
   "pagination": {

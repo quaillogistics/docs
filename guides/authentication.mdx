@@ -18,4 +18,23 @@ curl https://api.dotlookup.dev/v1/carriers/12345 \
 
 ## Getting an API Key
 
-You can generate an API key from the [DotLookup Dashboard](https://dotlookup.dev/dashboard).
+Sign up from the [DotLookup Dashboard](https://dotlookup.dev/login) or via the API:
+
+```bash
+curl -X POST https://api.dotlookup.dev/v1/auth/signup \
+  -H "Content-Type: application/json" \
+  -d '{"email": "you@example.com", "name": "Your Name", "company": "Your Co"}'
+```
+
+The response includes your `api_key`. Store it securely — it won't be shown again.
+
+## Checking Your Account
+
+Use the `/v1/auth/me` endpoint to view your account details and usage:
+
+```bash
+curl https://api.dotlookup.dev/v1/auth/me \
+  -H "X-API-Key: your_api_key_here"
+```
+
+See the [Account endpoint reference](/endpoints/account) for the full response shape.

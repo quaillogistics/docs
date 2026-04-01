@@ -1,0 +1,78 @@
+---
+title: Sign Up
+api: "POST /v1/auth/signup"
+description: Create an account and receive an API key
+---
+
+Create a new account and receive an API key. Only an email address is required.
+
+<ParamField body="email" type="string" required>
+  Your email address
+</ParamField>
+
+<ParamField body="name" type="string">
+  Your name
+</ParamField>
+
+<ParamField body="company" type="string">
+  Your company name
+</ParamField>
+
+<RequestExample>
+```bash cURL
+curl -X POST https://api.dotlookup.dev/v1/auth/signup \
+  -H "Content-Type: application/json" \
+  -d '{"email": "you@example.com", "name": "Jane Doe", "company": "Acme Logistics"}'
+```
+
+```python Python
+import requests
+
+resp = requests.post("https://api.dotlookup.dev/v1/auth/signup", json={
+    "email": "you@example.com",
+    "name": "Jane Doe",
+    "company": "Acme Logistics",
+})
+account = resp.json()
+print(f"Your API key: {account['api_key']}")
+```
+
+```javascript JavaScript
+const resp = await fetch("https://api.dotlookup.dev/v1/auth/signup", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({
+    email: "you@example.com",
+    name: "Jane Doe",
+    company: "Acme Logistics",
+  }),
+});
+const account = await resp.json();
+console.log(`Your API key: ${account.api_key}`);
+```
+</RequestExample>
+
+<ResponseExample>
+```json 201
+{
+  "id": 1,
+  "email": "you@example.com",
+  "name": "Jane Doe",
+  "company": "Acme Logistics",
+  "api_key": "dl_a1b2c3d4e5f6...",
+  "tier": "default",
+  "rate_limit": 100,
+  "is_active": true,
+  "created_at": "2025-03-20T14:30:00Z"
+}
+```
+
+```json 409
+{
+  "error": {
+    "code": "ACCOUNT_EXISTS",
+    "message": "an account with this email already exists"
+  }
+}
+```
+</ResponseExample>
