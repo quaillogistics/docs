@@ -1,0 +1,21 @@
+---
+title: Authentication
+description: How to authenticate requests to the DotLookup API
+---
+
+# Authentication
+
+Most endpoints work **without authentication**. To get higher rate limits, include your API key in the `X-API-Key` header.
+
+```bash
+curl https://api.dotlookup.dev/v1/carriers/12345 \
+  -H "X-API-Key: your_api_key_here"
+```
+
+<Note>
+  The `POST /v1/carriers/bulk` endpoint **requires** an API key. All other endpoints are accessible without one.
+</Note>
+
+## Getting an API Key
+
+You can generate an API key from the [DotLookup Dashboard](https://dotlookup.dev/dashboard).

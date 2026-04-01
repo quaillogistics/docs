@@ -1,0 +1,68 @@
+---
+title: Bulk Lookup
+api: "POST /v1/carriers/bulk"
+description: Look up multiple carriers by DOT number in a single request
+---
+
+Look up multiple carriers by DOT number in a single request (max 50).
+
+<Note>
+  This endpoint **requires an API key**. See [Authentication](/guides/authentication).
+</Note>
+
+<ParamField body="dot_numbers" type="string[]" required>
+  Array of USDOT numbers to look up (max 50)
+</ParamField>
+
+<RequestExample>
+```bash cURL
+curl -X POST https://api.dotlookup.dev/v1/carriers/bulk \
+  -H "Content-Type: application/json" \
+  -H "X-API-Key: your_api_key_here" \
+  -d '{"dot_numbers": ["2233855", "1234567"]}'
+```
+
+```python Python
+import requests
+
+resp = requests.post(
+    "https://api.dotlookup.dev/v1/carriers/bulk",
+    headers={"X-API-Key": "your_api_key"},
+    json={"dot_numbers": ["2233855", "1234567"]},
+)
+carriers = resp.json()
+```
+
+```javascript JavaScript
+const resp = await fetch("https://api.dotlookup.dev/v1/carriers/bulk", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+    "X-API-Key": "your_api_key",
+  },
+  body: JSON.stringify({ dot_numbers: ["2233855", "1234567"] }),
+});
+const carriers = await resp.json();
+```
+</RequestExample>
+
+<ResponseExample>
+```json 200
+[
+  {
+    "dot_number": "2233855",
+    "legal_name": "ACME TRUCKING LLC",
+    "status": "ACTIVE",
+    "address": { "street": "123 Main St", "city": "Dallas", "state": "TX", "zip": "75201" },
+    "fleet": { "power_units": 45, "drivers": 52 }
+  },
+  {
+    "dot_number": "1234567",
+    "legal_name": "BETA LOGISTICS INC",
+    "status": "ACTIVE",
+    "address": { "street": "456 Oak Ave", "city": "Houston", "state": "TX", "zip": "77001" },
+    "fleet": { "power_units": 12, "drivers": 15 }
+  }
+]
+```
+</ResponseExample>

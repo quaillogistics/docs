@@ -1,0 +1,20 @@
+---
+title: Rate Limits
+description: Request rate limits and throttling behavior
+---
+
+# Rate Limits
+
+Anonymous requests are limited to **100 requests per minute** per IP address. Authenticated requests use your account's rate limit.
+
+## Response Headers
+
+Every response includes rate limit headers:
+
+| Header | Description |
+|--------|-------------|
+| `X-RateLimit-Limit` | Max requests per window |
+| `X-RateLimit-Remaining` | Requests left in current window |
+| `X-RateLimit-Reset` | Unix timestamp when window resets |
+
+When you exceed the limit, the API returns a `429` status with error code `RATE_LIMITED`.

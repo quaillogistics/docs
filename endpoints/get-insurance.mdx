@@ -1,0 +1,49 @@
+---
+title: Get Carrier Insurance
+api: "GET /v1/carriers/{dot_number}/insurance"
+description: Active insurance policies with coverage details
+---
+
+Returns active insurance policies with coverage details.
+
+<ParamField path="dot_number" type="string" required>
+  The carrier's USDOT number
+</ParamField>
+
+<RequestExample>
+```bash cURL
+curl https://api.dotlookup.dev/v1/carriers/2233855/insurance
+```
+
+```python Python
+import requests
+
+resp = requests.get("https://api.dotlookup.dev/v1/carriers/2233855/insurance")
+insurance = resp.json()
+```
+
+```javascript JavaScript
+const resp = await fetch("https://api.dotlookup.dev/v1/carriers/2233855/insurance");
+const insurance = await resp.json();
+```
+</RequestExample>
+
+<ResponseExample>
+```json 200
+{
+  "dot_number": "2233855",
+  "legal_name": "ACME TRUCKING LLC",
+  "policies": [
+    {
+      "policy_type": "BIPD",
+      "insurer_name": "NATIONAL INTERSTATE INS CO",
+      "policy_number": "BCA-12345",
+      "coverage_amount": 1000000,
+      "effective_date": "2024-01-15T00:00:00Z",
+      "expiration_date": "2025-01-15T00:00:00Z",
+      "form_code": "BMC91X"
+    }
+  ]
+}
+```
+</ResponseExample>

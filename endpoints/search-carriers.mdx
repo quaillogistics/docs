@@ -1,0 +1,112 @@
+---
+title: Search Carriers
+api: "GET /v1/carriers/search"
+description: Paginated carrier search with text, filters, and geo/radius support
+---
+
+Paginated search with text, filters, and optional geo/radius support.
+
+## Query Parameters
+
+<ParamField query="q" type="string">
+  Text search (carrier name)
+</ParamField>
+
+<ParamField query="mc_number" type="string">
+  Filter by MC number
+</ParamField>
+
+<ParamField query="city" type="string">
+  Filter by city
+</ParamField>
+
+<ParamField query="state" type="string">
+  Filter by state (2-letter code)
+</ParamField>
+
+<ParamField query="status" type="string" default="ACTIVE">
+  Filter by status
+</ParamField>
+
+<ParamField query="cargo" type="string">
+  Filter by cargo type
+</ParamField>
+
+<ParamField query="fleet_min" type="integer">
+  Minimum power units
+</ParamField>
+
+<ParamField query="fleet_max" type="integer">
+  Maximum power units
+</ParamField>
+
+<ParamField query="lat" type="number">
+  Latitude for geo search (requires `lon`)
+</ParamField>
+
+<ParamField query="lon" type="number">
+  Longitude for geo search (requires `lat`)
+</ParamField>
+
+<ParamField query="radius" type="integer" default="50">
+  Search radius in miles (max: 200)
+</ParamField>
+
+<ParamField query="sort" type="string">
+  Sort by `name`, `fleet_size`, or `distance`
+</ParamField>
+
+<ParamField query="page" type="integer" default="1">
+  Page number
+</ParamField>
+
+<ParamField query="per_page" type="integer" default="25">
+  Results per page (max: 100)
+</ParamField>
+
+<RequestExample>
+```bash cURL
+curl "https://api.dotlookup.dev/v1/carriers/search?q=swift&state=TX&fleet_min=10"
+```
+
+```python Python
+import requests
+
+resp = requests.get("https://api.dotlookup.dev/v1/carriers/search", params={
+    "q": "swift",
+    "state": "TX",
+    "fleet_min": 10,
+})
+results = resp.json()
+```
+
+```javascript JavaScript
+const params = new URLSearchParams({ q: "swift", state: "TX", fleet_min: "10" });
+const resp = await fetch(`https://api.dotlookup.dev/v1/carriers/search?${params}`);
+const results = await resp.json();
+```
+</RequestExample>
+
+<ResponseExample>
+```json 200
+{
+  "data": [
+    {
+      "dot_number": "2233855",
+      "legal_name": "SWIFT TRANSPORTATION CO",
+      "city": "Dallas",
+      "state": "TX",
+      "status": "ACTIVE",
+      "power_units": 45,
+      "drivers": 52
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "per_page": 25,
+    "total": 1,
+    "total_pages": 1
+  }
+}
+```
+</ResponseExample>

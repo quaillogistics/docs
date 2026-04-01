@@ -1,0 +1,68 @@
+---
+title: Get Carrier by DOT
+api: "GET /v1/carriers/{dot_number}"
+description: Retrieve full carrier details by DOT number
+---
+
+Returns full carrier details including address, contact, fleet, authority, safety summary, and insurance summary.
+
+<ParamField path="dot_number" type="string" required>
+  The carrier's USDOT number
+</ParamField>
+
+<RequestExample>
+```bash cURL
+curl https://api.dotlookup.dev/v1/carriers/2233855
+```
+
+```python Python
+import requests
+
+resp = requests.get("https://api.dotlookup.dev/v1/carriers/2233855")
+carrier = resp.json()
+```
+
+```javascript JavaScript
+const resp = await fetch("https://api.dotlookup.dev/v1/carriers/2233855");
+const carrier = await resp.json();
+```
+</RequestExample>
+
+<ResponseExample>
+```json 200
+{
+  "dot_number": "2233855",
+  "mc_number": "747866",
+  "legal_name": "ACME TRUCKING LLC",
+  "status": "ACTIVE",
+  "address": {
+    "street": "123 Main St",
+    "city": "Dallas",
+    "state": "TX",
+    "zip": "75201"
+  },
+  "contact": {
+    "phone": "(214) 555-0100",
+    "email": "info@acmetrucking.com"
+  },
+  "fleet": {
+    "power_units": 45,
+    "drivers": 52
+  },
+  "authority": {
+    "status": "AUTHORIZED FOR HHG",
+    "common_authority_date": "2012-06-15T00:00:00Z"
+  },
+  "safety": {
+    "rating": "Satisfactory",
+    "driver_oos_rate": 5.2,
+    "driver_oos_rate_national": 5.51,
+    "total_crashes": 2
+  },
+  "insurance": {
+    "bipd_on_file": 1000000,
+    "cargo_on_file": 250000
+  }
+}
+```
+</ResponseExample>

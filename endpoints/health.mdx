@@ -1,0 +1,21 @@
+---
+title: Health Check
+api: "GET /v1/health"
+description: Check API availability
+---
+
+Simple health check endpoint. Returns `ok` when the API is running.
+
+<RequestExample>
+```bash cURL
+curl https://api.dotlookup.dev/v1/health
+```
+</RequestExample>
+
+<ResponseExample>
+```json 200
+{
+  "status": "ok"
+}
+```
+</ResponseExample>

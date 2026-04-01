@@ -1,0 +1,47 @@
+---
+title: Introduction
+description: Free, open REST API for FMCSA carrier data
+---
+
+# DotLookup API
+
+Free, open REST API for FMCSA carrier data. No API key required for basic lookups.
+
+## Base URL
+
+```
+https://api.dotlookup.dev/v1
+```
+
+## Quick Start
+
+Look up any carrier by DOT number — no signup needed:
+
+```bash
+curl https://api.dotlookup.dev/v1/carriers/2233855
+```
+
+## What's Available
+
+<CardGroup cols={2}>
+  <Card title="Carrier Profiles" icon="truck" href="/endpoints/get-carrier">
+    Full carrier details: address, contact, fleet size, authority status
+  </Card>
+  <Card title="Search" icon="magnifying-glass" href="/endpoints/search-carriers">
+    Text search with filters, geo/radius support, and pagination
+  </Card>
+  <Card title="Safety Data" icon="shield-check" href="/endpoints/get-safety">
+    Inspections, OOS rates, crash statistics, BASIC violations
+  </Card>
+  <Card title="Insurance" icon="file-contract" href="/endpoints/get-insurance">
+    Active insurance policies with coverage details
+  </Card>
+</CardGroup>
+
+## Authentication
+
+Most endpoints work without authentication. Include an API key via the `X-API-Key` header for higher rate limits and access to the [bulk lookup](/endpoints/bulk-lookup) endpoint.
+
+<Card title="Authentication Guide" icon="key" href="/guides/authentication">
+  Learn how to authenticate your requests
+</Card>

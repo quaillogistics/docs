@@ -1,0 +1,27 @@
+---
+title: Errors
+description: Error response format and common error codes
+---
+
+# Errors
+
+All errors return JSON with an `error` object containing `code` and `message` fields.
+
+```json
+{
+  "error": {
+    "code": "NOT_FOUND",
+    "message": "No carrier found with DOT# 99999"
+  }
+}
+```
+
+## Error Codes
+
+| Code | HTTP Status | Description |
+|------|-------------|-------------|
+| `NOT_FOUND` | 404 | Resource doesn't exist |
+| `INVALID_PARAM` | 400 | Bad request parameter |
+| `RATE_LIMITED` | 429 | Too many requests |
+| `UNAUTHORIZED` | 401 | Missing or invalid API key |
+| `INTERNAL_ERROR` | 500 | Server error |

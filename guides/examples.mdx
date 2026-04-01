@@ -1,0 +1,97 @@
+---
+title: Code Examples
+description: Example code for using the DotLookup API in Python, JavaScript, and Go
+---
+
+# Code Examples
+
+## Python
+
+```python
+import requests
+
+# Look up a carrier
+resp = requests.get("https://api.dotlookup.dev/v1/carriers/2233855")
+carrier = resp.json()
+print(f"{carrier['legal_name']} — {carrier['status']}")
+
+# Search carriers
+resp = requests.get("https://api.dotlookup.dev/v1/carriers/search", params={
+    "q": "swift",
+    "state": "TX",
+    "fleet_min": 10,
+})
+results = resp.json()
+for c in results["data"]:
+    print(f"  {c['dot_number']} {c['legal_name']}")
+
+# Bulk lookup (requires API key)
+resp = requests.post(
+    "https://api.dotlookup.dev/v1/carriers/bulk",
+    headers={"X-API-Key": "your_api_key"},
+    json={"dot_numbers": ["2233855", "1234567"]},
+)
+carriers = resp.json()
+for c in carriers:
+    print(f"  {c['dot_number']} {c['legal_name']}")
+```
+
+## JavaScript / TypeScript
+
+```javascript
+// Look up a carrier
+const resp = await fetch("https://api.dotlookup.dev/v1/carriers/2233855");
+const carrier = await resp.json();
+console.log(`${carrier.legal_name} — ${carrier.status}`);
+
+// Search carriers
+const params = new URLSearchParams({ q: "swift", state: "TX", fleet_min: "10" });
+const searchResp = await fetch(`https://api.dotlookup.dev/v1/carriers/search?${params}`);
+const { data } = await searchResp.json();
+data.forEach(c => console.log(`  ${c.dot_number} ${c.legal_name}`));
+
+// Bulk lookup (requires API key)
+const bulkResp = await fetch("https://api.dotlookup.dev/v1/carriers/bulk", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+    "X-API-Key": "your_api_key",
+  },
+  body: JSON.stringify({ dot_numbers: ["2233855", "1234567"] }),
+});
+const carriers = await bulkResp.json();
+```
+
+## Go
+
+```go
+package main
+
+import (
+	"encoding/json"
+	"fmt"
+	"net/http"
+)
+
+func main() {
+	// Look up a carrier
+	resp, _ := http.Get("https://api.dotlookup.dev/v1/carriers/2233855")
+	defer resp.Body.Close()
+
+	var carrier map[string]any
+	json.NewDecoder(resp.Body).Decode(&carrier)
+	fmt.Printf("%s — %s\n", carrier["legal_name"], carrier["status"])
+
+	// Search carriers
+	resp, _ = http.Get("https://api.dotlookup.dev/v1/carriers/search?q=swift&state=TX")
+	defer resp.Body.Close()
+
+	var result struct {
+		Data []map[string]any `json:"data"`
+	}
+	json.NewDecoder(resp.Body).Decode(&result)
+	for _, c := range result.Data {
+		fmt.Printf("  %s %s\n", c["dot_number"], c["legal_name"])
+	}
+}
+```

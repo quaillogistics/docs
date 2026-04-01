@@ -1,0 +1,73 @@
+---
+title: Get Carrier Safety
+api: "GET /v1/carriers/{dot_number}/safety"
+description: Detailed safety data including inspections, OOS rates, crashes, and violations
+---
+
+Returns detailed safety data: inspections, OOS rates vs national average, crash statistics, and BASIC violations.
+
+<ParamField path="dot_number" type="string" required>
+  The carrier's USDOT number
+</ParamField>
+
+<RequestExample>
+```bash cURL
+curl https://api.dotlookup.dev/v1/carriers/2233855/safety
+```
+
+```python Python
+import requests
+
+resp = requests.get("https://api.dotlookup.dev/v1/carriers/2233855/safety")
+safety = resp.json()
+```
+
+```javascript JavaScript
+const resp = await fetch("https://api.dotlookup.dev/v1/carriers/2233855/safety");
+const safety = await resp.json();
+```
+</RequestExample>
+
+<ResponseExample>
+```json 200
+{
+  "dot_number": "2233855",
+  "legal_name": "ACME TRUCKING LLC",
+  "rating": "Satisfactory",
+  "inspections": {
+    "driver": {
+      "total": 42,
+      "oos": 3,
+      "oos_rate": 7.1,
+      "national_avg": 5.51
+    },
+    "vehicle": {
+      "total": 38,
+      "oos": 8,
+      "oos_rate": 21.1,
+      "national_avg": 20.72
+    },
+    "hazmat": {
+      "total": 0,
+      "oos": 0,
+      "oos_rate": 0,
+      "national_avg": 4.5
+    }
+  },
+  "crashes": {
+    "fatal": 0,
+    "injury": 1,
+    "towaway": 1,
+    "total": 2,
+    "rate": 0.8
+  },
+  "violations": {
+    "unsafe_driving": 5,
+    "driver_fitness": 1,
+    "hos": 8,
+    "drug_alcohol": 0,
+    "vehicle_maint": 3
+  }
+}
+```
+</ResponseExample>
