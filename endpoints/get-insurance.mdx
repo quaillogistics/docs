@@ -4,7 +4,7 @@ api: "GET /v1/carriers/{dot_number}/insurance"
 description: Active insurance policies with coverage details
 ---
 
-Returns active insurance policies with coverage details.
+Returns all insurance policies on file with coverage details. Each policy includes a `status` field (`active` or `expired`) computed against the current time.
 
 <ParamField path="dot_number" type="string" required>
   The carrier's USDOT number
@@ -41,7 +41,8 @@ const insurance = await resp.json();
       "coverage_amount": 1000000,
       "effective_date": "2024-01-15T00:00:00Z",
       "expiration_date": "2025-01-15T00:00:00Z",
-      "form_code": "BMC91X"
+      "form_code": "BMC91X",
+      "status": "active"
     }
   ]
 }

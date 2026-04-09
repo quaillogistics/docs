@@ -4,10 +4,14 @@ api: "POST /v1/carriers/bulk"
 description: Look up multiple carriers by DOT number in a single request
 ---
 
-Look up multiple carriers by DOT number in a single request (max 50).
+Look up multiple carriers by DOT number in a single request (max 50). Returns the core carrier profile for each match.
 
 <Note>
   This endpoint **requires an API key**. See [Authentication](/guides/authentication).
+</Note>
+
+<Note>
+  Bulk lookup returns the core carrier profile only — **safety**, **insurance**, **risk score**, and **related companies** are not included. For those, fetch each carrier individually via [`GET /v1/carriers/{dot_number}`](/endpoints/get-carrier).
 </Note>
 
 <ParamField body="dot_numbers" type="string[]" required>
@@ -73,20 +77,7 @@ const carriers = await resp.json();
     },
     "mcs150": { "date": "2024-06-01T00:00:00Z", "mileage": 1200000, "mileage_year": 2023 },
     "cargo_carried": ["General Freight"],
-    "operation_classification": ["Authorized For Hire"],
-    "safety": {
-      "rating": "Satisfactory",
-      "rating_date": "2019-03-20T00:00:00Z",
-      "driver_oos_rate": 5.2,
-      "driver_oos_rate_national": 5.51,
-      "vehicle_oos_rate": 18.3,
-      "vehicle_oos_rate_national": 20.72,
-      "total_crashes": 2,
-      "fatal_crashes": 0,
-      "unsafe_driving_violations": 5,
-      "hos_violations": 8
-    },
-    "insurance": { "bipd_on_file": 1000000, "cargo_on_file": 250000 }
+    "operation_classification": ["Authorized For Hire"]
   }
 ]
 ```

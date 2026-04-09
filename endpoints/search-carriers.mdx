@@ -36,6 +36,22 @@ Paginated search with text, filters, and optional geo/radius support.
   Filter by cargo type
 </ParamField>
 
+<ParamField query="entity_type" type="string">
+  Filter by entity type (e.g. `CARRIER`, `BROKER`, `FREIGHT FORWARDER`, `SHIPPER`)
+</ParamField>
+
+<ParamField query="officer" type="string">
+  Filter by company officer name (matches either of the two officer slots)
+</ParamField>
+
+<ParamField query="phone" type="string">
+  Filter by phone number
+</ParamField>
+
+<ParamField query="email" type="string">
+  Filter by email address
+</ParamField>
+
 <ParamField query="fleet_min" type="integer">
   Minimum power units
 </ParamField>
@@ -107,9 +123,9 @@ const results = await resp.json();
       "city": "Dallas",
       "state": "TX",
       "status": "ACTIVE",
+      "entity_type": "CARRIER",
       "power_units": 45,
       "drivers": 52,
-      "safety_rating": "Satisfactory",
       "vehicle_oos_rate": 18.3,
       "vehicle_oos_national": 20.72,
       "driver_oos_rate": 5.2,

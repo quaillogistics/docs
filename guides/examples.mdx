@@ -15,7 +15,7 @@ resp = requests.get("https://api.dotlookup.dev/v1/carriers/2233855")
 carrier = resp.json()
 print(f"{carrier['legal_name']} — {carrier['status']}")
 print(f"  Fleet: {carrier['fleet']['power_units']} trucks, {carrier['fleet']['drivers']} drivers")
-print(f"  Safety rating: {carrier['safety']['rating']}")
+print(f"  Risk score: {carrier['risk_score']['score']} ({carrier['risk_score']['grade']})")
 
 # Search carriers with filters
 resp = requests.get("https://api.dotlookup.dev/v1/carriers/search", params={
@@ -77,7 +77,7 @@ const params = new URLSearchParams({ q: "swift", state: "TX", fleet_min: "10" })
 const searchResp = await fetch(`https://api.dotlookup.dev/v1/carriers/search?${params}`);
 const { data, pagination } = await searchResp.json();
 console.log(`Found ${pagination.total} carriers`);
-data.forEach(c => console.log(`  ${c.dot_number} ${c.legal_name} (${c.safety_rating})`));
+data.forEach(c => console.log(`  ${c.dot_number} ${c.legal_name} — ${c.power_units} units`));
 
 // Bulk lookup (requires API key)
 const bulkResp = await fetch("https://api.dotlookup.dev/v1/carriers/bulk", {

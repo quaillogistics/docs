@@ -4,7 +4,7 @@ api: "GET /v1/carriers/{dot_number}"
 description: Retrieve full carrier details by DOT number
 ---
 
-Returns full carrier details including address, contact, fleet, authority, safety summary, and insurance summary.
+Returns full carrier details including address, contact, fleet, authority, safety summary, insurance summary, a composite risk score, and related companies linked by shared officers, phone, email, or address.
 
 <ParamField path="dot_number" type="string" required>
   The carrier's USDOT number
@@ -66,8 +66,6 @@ const carrier = await resp.json();
   "cargo_carried": ["General Freight", "Household Goods"],
   "operation_classification": ["Authorized For Hire"],
   "safety": {
-    "rating": "Satisfactory",
-    "rating_date": "2019-03-20T00:00:00Z",
     "driver_oos_rate": 5.2,
     "driver_oos_rate_national": 5.51,
     "vehicle_oos_rate": 18.3,
@@ -80,7 +78,60 @@ const carrier = await resp.json();
   "insurance": {
     "bipd_on_file": 1000000,
     "cargo_on_file": 250000
-  }
+  },
+  "risk_score": {
+    "score": 87,
+    "grade": "B",
+    "tier": "Good",
+    "confidence": "high",
+    "components": [
+      { "name": "Compliance", "score": 95, "weight": 40 },
+      { "name": "Safety", "score": 82, "weight": 35 },
+      { "name": "Insurance", "score": 80, "weight": 25 }
+    ],
+    "flags": [
+      {
+        "severity": "warning",
+        "code": "HIGH_DRIVER_OOS",
+        "message": "Driver out-of-service rate exceeds national average"
+      }
+    ]
+  },
+  "related_companies": [
+    {
+      "dot_number": "3344556",
+      "mc_number": "998877",
+      "legal_name": "ACME LOGISTICS LLC",
+      "city": "Dallas",
+      "state": "TX",
+      "status": "ACTIVE",
+      "entity_type": "CARRIER",
+      "power_units": 12,
+      "drivers": 14,
+      "match_types": ["officer", "phone"]
+    }
+  ]
 }
 ```
 </ResponseExample>
+
+## Risk Score
+
+The `risk_score` object is a composite 0–100 trust score derived from three components: **Compliance** (40%), **Safety** (35%), and **Insurance** (25%). Higher scores mean higher trust.
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `score` | integer | Overall score from 0 (worst) to 100 (best) |
+| `grade` | string | Letter grade: `A` (≥90), `B` (≥80), `C` (≥65), `D` (≥45), `F` (<45) |
+| `tier` | string | Human label: `Excellent`, `Good`, `Fair`, `Poor`, `Critical` |
+| `confidence` | string | Data confidence: `high`, `medium`, or `low` (depends on how many signals the scoring engine had) |
+| `components` | array | Sub-score breakdown with `name`, `score`, and `weight` for Compliance, Safety, and Insurance |
+| `flags` | array | Notable conditions, each with `severity` (`critical`, `warning`, `info`), `code` (e.g. `PRIOR_REVOCATION`, `NO_BIPD`, `HIGH_DRIVER_OOS`, `STALE_MCS150`), and a human-readable `message` |
+
+Hard caps apply after scoring: inactive carriers are capped at 15, carriers with pending revocation at 35, active carriers with no BIPD insurance at 35, and carriers with a prior revocation at 55.
+
+## Related Companies
+
+The `related_companies` array lists carriers linked to the subject carrier via shared company officers, phone numbers, email addresses, email domains, physical addresses, or mailing addresses. Each entry includes a `match_types` array listing every match dimension (e.g. `["officer", "phone"]`).
+
+Possible match type values: `officer`, `phone`, `email`, `email_domain`, `address`, `mailing_address`.

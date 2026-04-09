@@ -4,7 +4,11 @@ api: "GET /v1/carriers/{dot_number}/safety"
 description: Detailed safety data including inspections, OOS rates, crashes, and violations
 ---
 
-Returns detailed safety data: inspections, OOS rates vs national average, crash statistics, and BASIC violations.
+Returns detailed safety data: inspections, OOS rates vs national average, crash statistics, and BASIC violations from the most recent 24 months of FMCSA data.
+
+<Note>
+  FMCSA no longer publishes carrier safety ratings in a bulk feed, so this endpoint does not include a `rating` field. Use the `inspections`, `crashes`, and `violations` breakdowns — or the `risk_score` on the [carrier detail endpoint](/endpoints/get-carrier) — to evaluate a carrier's safety profile.
+</Note>
 
 <ParamField path="dot_number" type="string" required>
   The carrier's USDOT number
@@ -33,8 +37,6 @@ const safety = await resp.json();
 {
   "dot_number": "2233855",
   "legal_name": "ACME TRUCKING LLC",
-  "rating": "Satisfactory",
-  "rating_date": "2019-03-20T00:00:00Z",
   "inspections": {
     "driver": {
       "total": 42,
