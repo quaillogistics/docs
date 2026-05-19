@@ -1,10 +1,10 @@
 ---
 title: Metadata
 api: "GET /v1/meta"
-description: Database statistics and data freshness information
+description: Database statistics, data freshness, and feature horizons
 ---
 
-Returns database statistics and data freshness information.
+Returns database statistics, the timestamp of the latest ETL run, and the horizons consumers need for [risk-history](/endpoints/risk-history) and [point-in-time](/endpoints/get-carrier#point-in-time-as-of) queries.
 
 <RequestExample>
 ```bash cURL
@@ -15,21 +15,35 @@ curl https://api.dotlookup.dev/v1/meta
 <ResponseExample>
 ```json 200
 {
-  "total_carriers": 850000,
-  "active_carriers": 620000,
-  "carriers_with_safety": 450000,
-  "carriers_with_insurance": 380000,
+  "total_carriers": 1679124,
+  "active_carriers": 400489,
+  "carriers_with_safety": 305298,
+  "carriers_with_insurance": 425587,
   "last_etl_run": {
-    "id": 42,
-    "dataset": "census",
-    "started_at": "2025-03-15T08:00:00Z",
-    "finished_at": "2025-03-15T08:30:00Z",
-    "rows_processed": 850000,
-    "rows_errored": 12,
-    "status": "completed",
+    "id": 462,
+    "dataset": "export",
+    "started_at": "2026-05-19T08:00:00Z",
+    "finished_at": "2026-05-19T08:18:36Z",
+    "rows_processed": 1679124,
+    "rows_errored": 0,
+    "status": "success",
     "error_message": ""
   },
-  "data_freshness": "2025-03-15T08:30:00Z"
+  "data_freshness": "2026-05-19T08:18:36Z",
+  "risk_history_horizon": "2026-05-19T08:00:00Z",
+  "risk_history_rows": 1679124,
+  "etl_changes_horizon": "2026-04-22T08:00:00Z"
 }
 ```
 </ResponseExample>
+
+## Fields
+
+| Field | Description |
+|---|---|
+| `total_carriers`, `active_carriers`, `carriers_with_safety`, `carriers_with_insurance` | Row counts in the corresponding tables. `active_carriers` filters `carrier_status = 'ACTIVE'`. |
+| `last_etl_run` | Metadata for the most recently completed ETL step (typically `export`, the final step). |
+| `data_freshness` | `finished_at` of `last_etl_run`. Use this as the "as of" date for the live response. |
+| `risk_history_horizon` | Earliest `computed_at` in `carrier_risk_history`. Floor for the [risk-history](/endpoints/risk-history) endpoint. Absent when the table is empty (pre-first-ETL state). |
+| `risk_history_rows` | Total rows in `carrier_risk_history`. `0` is a meaningful "no history yet" signal. |
+| `etl_changes_horizon` | Earliest `batch_ts` in `etl_changes`. Floor for [point-in-time `?as_of=` queries](/endpoints/get-carrier#point-in-time-as-of). Retention is 52 weeks. Absent when the change feed is empty. |

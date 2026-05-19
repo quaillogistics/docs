@@ -1,0 +1,140 @@
+---
+title: Watchlist
+description: Subscribe to carriers and receive a daily diff when their status changes
+---
+
+The watchlist lets your account subscribe to specific carriers. After every nightly ETL, DotLookup compares the new data to the previous run and publishes diffs scoped to carriers your account watches — delivered as an [email digest](https://dotlookup.dev) or, for programmatic consumers, an [HMAC-signed webhook](/endpoints/watchlist-webhook).
+
+<Note>
+  All watchlist endpoints **require an API key**. See [Authentication](/guides/authentication).
+</Note>
+
+## List watched carriers
+
+```
+GET /v1/watchlist
+```
+
+Returns the carriers your account is currently watching.
+
+<RequestExample>
+```bash cURL
+curl https://api.dotlookup.dev/v1/watchlist \
+  -H "X-API-Key: your_api_key_here"
+```
+</RequestExample>
+
+<ResponseExample>
+```json 200
+{
+  "carriers": [
+    {
+      "dot_number": "2233855",
+      "carrier_name": "ACME TRUCKING LLC",
+      "status": "ACTIVE",
+      "entity_type": "CARRIER",
+      "city": "Dallas",
+      "state": "TX",
+      "created_at": "2026-04-12T15:30:00Z"
+    }
+  ],
+  "total": 1
+}
+```
+</ResponseExample>
+
+## Add carriers to the watchlist
+
+```
+POST /v1/watchlist
+```
+
+Add up to 50 DOT numbers in a single request. Adding a DOT that's already watched is a no-op.
+
+<ParamField body="dot_numbers" type="string[]" required>
+  Array of USDOT numbers (max 50 per request)
+</ParamField>
+
+<RequestExample>
+```bash cURL
+curl -X POST https://api.dotlookup.dev/v1/watchlist \
+  -H "X-API-Key: your_api_key_here" \
+  -H "Content-Type: application/json" \
+  -d '{"dot_numbers": ["2233855", "1234567"]}'
+```
+</RequestExample>
+
+<ResponseExample>
+```json 200
+{
+  "added": 2,
+  "skipped": 0,
+  "status": "ok"
+}
+```
+</ResponseExample>
+
+Returns `400 LIMIT_EXCEEDED` if the addition would exceed your account's watchlist cap.
+
+## Remove a carrier
+
+```
+DELETE /v1/watchlist/{dot_number}
+```
+
+Removes a single DOT from the watchlist. Idempotent.
+
+<RequestExample>
+```bash cURL
+curl -X DELETE https://api.dotlookup.dev/v1/watchlist/2233855 \
+  -H "X-API-Key: your_api_key_here"
+```
+</RequestExample>
+
+<ResponseExample>
+```json 200
+{ "status": "removed" }
+```
+</ResponseExample>
+
+## Check whether a carrier is watched
+
+```
+GET /v1/watchlist/check?dot_number=2233855
+```
+
+Lightweight check for one DOT — returns just a boolean. Useful for surfacing a "watching" toggle in a UI.
+
+<ParamField query="dot_number" type="string" required>
+  The carrier's USDOT number. **Singular** — pass one DOT per request.
+</ParamField>
+
+<RequestExample>
+```bash cURL
+curl "https://api.dotlookup.dev/v1/watchlist/check?dot_number=2233855" \
+  -H "X-API-Key: your_api_key_here"
+```
+</RequestExample>
+
+<ResponseExample>
+```json 200
+{ "watching": true }
+```
+</ResponseExample>
+
+## Recent changes for watched carriers
+
+```
+GET /v1/watchlist/changes
+```
+
+Returns recent diffs (across all ETL runs in your account's retention window) for carriers on your watchlist. The shape mirrors [`GET /v1/changes/{etl_run_id}`](/endpoints/changes) — same `category`, `old_values`, `new_values` fields.
+
+Use this for catch-up after a webhook delivery failure or when wiring up a new dashboard.
+
+<RequestExample>
+```bash cURL
+curl "https://api.dotlookup.dev/v1/watchlist/changes?since=2026-05-01" \
+  -H "X-API-Key: your_api_key_here"
+```
+</RequestExample>

@@ -10,6 +10,16 @@ Paginated search with text, filters, and optional geo/radius support.
   When using geo search (`lat`/`lon`), each result includes a `distance_miles` field with the distance from the search point.
 </Note>
 
+<Warning>
+  **Geo resolution is state-level.** Every carrier in a state shares the same geocoded point — the centroid of that state. As a result:
+
+  - A `radius` smaller than the diameter of a state will return very few or zero results.
+  - Practical floor: **~200 miles** to reliably hit carriers in neighboring states' centroids.
+  - Use `state=XX` for tighter location filtering at the state level, or `city=...` for city-level filtering by name (string match on the carrier's physical address city).
+
+  This is a limitation of the daily ETL's geocoding step, not a query bug. Real per-carrier geocoding is on the roadmap.
+</Warning>
+
 ## Query Parameters
 
 <ParamField query="q" type="string">

@@ -1,0 +1,169 @@
+---
+title: Watchlist Webhooks
+description: HMAC-signed webhook delivery of watchlist changes after each ETL run
+---
+
+Configure a webhook URL on your account and DotLookup will POST a signed JSON payload to it after every nightly ETL run, containing diffs for the carriers on your [watchlist](/endpoints/watchlist).
+
+One webhook URL per account. One delivery per ETL run with all changes batched. Mirrors the existing email-digest behavior; lets programmatic consumers drop polling.
+
+<Note>
+  All endpoints below **require an API key**. See [Authentication](/guides/authentication).
+</Note>
+
+## Lifecycle
+
+1. **Configure**: `PUT /v1/watchlist/webhook` with a URL. DotLookup generates a random 32-byte secret and returns it **once** in the response — store it; it's used as the HMAC key and is never returned again.
+2. **Receive**: After every nightly ETL, DotLookup POSTs the [event payload](#event-payload) to your URL with an `X-Dotlookup-Signature` header. Verify the HMAC; respond `2xx` to acknowledge.
+3. **Retry**: A non-2xx response triggers retries at 1m, 5m, and 30m. After three failures, the delivery is marked `failed` and you can either re-trigger via watchlist catch-up or rotate the URL.
+4. **Inspect**: `GET /v1/watchlist/webhook/deliveries` returns the recent attempt log for debugging.
+
+## Verify the signature
+
+Every delivery includes `X-Dotlookup-Signature: sha256=<hex>` — the HMAC-SHA256 of the raw request body using your webhook secret as the key. Reject any request whose signature doesn't match.
+
+```go
+// Go
+import (
+    "crypto/hmac"
+    "crypto/sha256"
+    "encoding/hex"
+)
+
+func verify(body []byte, signature, secret string) bool {
+    mac := hmac.New(sha256.New, []byte(secret))
+    mac.Write(body)
+    expected := "sha256=" + hex.EncodeToString(mac.Sum(nil))
+    return hmac.Equal([]byte(signature), []byte(expected))
+}
+```
+
+```typescript
+// TypeScript (Node 19+)
+import { createHmac, timingSafeEqual } from "node:crypto";
+
+function verify(body: Buffer, signature: string, secret: string): boolean {
+  const expected = "sha256=" + createHmac("sha256", secret).update(body).digest("hex");
+  const a = Buffer.from(signature);
+  const b = Buffer.from(expected);
+  return a.length === b.length && timingSafeEqual(a, b);
+}
+```
+
+The signature is over the **raw request body** — verify before parsing JSON, since any rewriting (whitespace normalization, key reordering) will break the HMAC.
+
+## Event payload
+
+```json
+{
+  "event": "watchlist.changes",
+  "etl_run_id": 462,
+  "batch_ts": "2026-05-19T08:00:00Z",
+  "account_id": 7,
+  "changes": [
+    {
+      "dot_number": "2233855",
+      "carrier_name": "ACME TRUCKING LLC",
+      "categories": ["authority_change", "insurance_change"],
+      "diffs": [
+        {
+          "category": "authority_change",
+          "old_values": { "carrier_status": "ACTIVE", "authority_status": "ACTIVE" },
+          "new_values": { "carrier_status": "INACTIVE", "authority_status": "" }
+        },
+        {
+          "category": "insurance_change",
+          "old_values": { "max_bipd": 1000000, "max_cargo": 100000 },
+          "new_values": { "max_bipd": 0, "max_cargo": 100000 }
+        }
+      ]
+    }
+  ]
+}
+```
+
+Headers on every delivery:
+
+| Header | Description |
+|---|---|
+| `X-Dotlookup-Signature` | `sha256=<hex>` HMAC of the raw body with your secret. |
+| `X-Dotlookup-Event` | Event type (currently `watchlist.changes` or `watchlist.test`). Lets you route without parsing the body. |
+
+The `etl_run_id` is the **pages** step's `etl_runs.id`, the same value surfaced on [risk-history](/endpoints/risk-history) and the [change feed](/endpoints/changes). Receivers can dedupe on `(account_id, etl_run_id)` if they're worried about a duplicate delivery from a retry.
+
+## Configure the webhook
+
+```
+GET /v1/watchlist/webhook       # current config (without secret)
+PUT /v1/watchlist/webhook       # create or update; returns secret ONCE on create
+DELETE /v1/watchlist/webhook    # disable
+POST /v1/watchlist/webhook/rotate-secret  # generate a new secret, invalidate the old one
+POST /v1/watchlist/webhook/test           # synchronously fire a sample payload
+GET /v1/watchlist/webhook/deliveries      # recent delivery attempts
+```
+
+<RequestExample>
+```bash Create
+curl -X PUT https://api.dotlookup.dev/v1/watchlist/webhook \
+  -H "X-API-Key: your_api_key_here" \
+  -H "Content-Type: application/json" \
+  -d '{"url": "https://your-app.example.com/dotlookup/webhook"}'
+```
+
+```bash Test
+curl -X POST https://api.dotlookup.dev/v1/watchlist/webhook/test \
+  -H "X-API-Key: your_api_key_here"
+```
+
+```bash Inspect deliveries
+curl "https://api.dotlookup.dev/v1/watchlist/webhook/deliveries?limit=50" \
+  -H "X-API-Key: your_api_key_here"
+```
+</RequestExample>
+
+<ResponseExample>
+```json PUT (new webhook)
+{
+  "account_id": 7,
+  "url": "https://your-app.example.com/dotlookup/webhook",
+  "enabled": true,
+  "secret": "8f3a...c91d",
+  "created_at": "2026-05-19T14:30:00Z",
+  "updated_at": "2026-05-19T14:30:00Z"
+}
+```
+
+```json PUT (update existing)
+{
+  "account_id": 7,
+  "url": "https://your-new-url.example.com/dotlookup/webhook",
+  "enabled": true,
+  "created_at": "2026-04-01T10:00:00Z",
+  "updated_at": "2026-05-19T14:30:00Z"
+}
+```
+
+```json POST /test
+{
+  "attempts": 1,
+  "duration_ms": 90,
+  "error": "",
+  "status_code": 200,
+  "success": true
+}
+```
+</ResponseExample>
+
+<Note>
+  The `secret` field is returned **only** on initial create or after `POST /rotate-secret`. Updates that don't rotate the secret never include it, so it can't accidentally leak into logs or UI state. Lose the secret? Rotate it.
+</Note>
+
+## URL validation
+
+v1 blocks only non-`http(s)` schemes and obvious loopback host literals (`localhost`, `127.0.0.1`, `::1`, `0.0.0.0`). DNS-resolution-based private-IP filtering is intentionally not enforced — accounts already control their own webhook URL, and operators self-hosting may legitimately point at internal services.
+
+## Failure modes
+
+- **Non-2xx response or timeout** (10s) — retried at 1m, 5m, 30m. After three failures, the delivery row is marked `failed`.
+- **Slow receiver** — does not block other accounts; dispatch is fanned out across a fixed goroutine pool.
+- **Process restart during retry window** — in-flight retries are lost. Recover via the [watchlist changes endpoint](/endpoints/watchlist#recent-changes-for-watched-carriers) to backfill the missing window, or via the email digest which uses a separate idempotency log.

@@ -4,10 +4,14 @@ api: "GET /v1/carriers/{dot_number}"
 description: Retrieve full carrier details by DOT number
 ---
 
-Returns full carrier details including address, contact, fleet, authority, safety summary, insurance summary, a composite risk score, and related companies linked by shared officers, phone, email, or address.
+Returns full carrier details including address, contact, fleet, authority, safety summary, insurance summary, a composite risk score, related companies linked by shared officers/phone/email/address, and chameleon-carrier signals.
 
 <ParamField path="dot_number" type="string" required>
   The carrier's USDOT number
+</ParamField>
+
+<ParamField query="as_of" type="string">
+  Reconstruct the carrier as it appeared at the given date (`YYYY-MM-DD` or RFC3339). See [Point-in-time queries](#point-in-time-as-of) below. Default behavior (no `as_of`) returns current state.
 </ParamField>
 
 <RequestExample>
@@ -110,6 +114,17 @@ const carrier = await resp.json();
       "drivers": 14,
       "match_types": ["officer", "phone"]
     }
+  ],
+  "chameleon_links": [
+    {
+      "dot_number": "1122334",
+      "legal_name": "OLD ACME TRUCKING LLC",
+      "status": "INACTIVE",
+      "signals": ["address", "officer"],
+      "confidence": "high",
+      "direction": "successor_of",
+      "reason": "May be a successor to DOT 1122334"
+    }
   ]
 }
 ```
@@ -128,10 +143,82 @@ The `risk_score` object is a composite 0–100 trust score derived from three co
 | `components` | array | Sub-score breakdown with `name`, `score`, and `weight` for Compliance, Safety, and Insurance |
 | `flags` | array | Notable conditions, each with `severity` (`critical`, `warning`, `info`), `code` (e.g. `PRIOR_REVOCATION`, `NO_BIPD`, `HIGH_DRIVER_OOS`, `STALE_MCS150`), and a human-readable `message` |
 
-Hard caps apply after scoring: inactive carriers are capped at 15, carriers with pending revocation at 35, active carriers with no BIPD insurance at 35, and carriers with a prior revocation at 55.
+Hard caps apply after scoring: inactive carriers are capped at 15, carriers with pending revocation at 35, active carriers with no BIPD insurance at 35, a detected chameleon link at 45, and carriers with a prior revocation at 55.
+
+<Note>
+  Need to score against **stricter thresholds** than the federal minimums (e.g. require $1M BIPD)? Use [`POST /v1/carriers/{dot}/risk-score`](/endpoints/risk-score) with a custom policy body.
+</Note>
+
+<Note>
+  Need to see how the score has **moved over time**? Use [`GET /v1/carriers/{dot}/risk-history`](/endpoints/risk-history) for per-ETL snapshots.
+</Note>
 
 ## Related Companies
 
 The `related_companies` array lists carriers linked to the subject carrier via shared company officers, phone numbers, email addresses, email domains, physical addresses, or mailing addresses. Each entry includes a `match_types` array listing every match dimension (e.g. `["officer", "phone"]`).
 
 Possible match type values: `officer`, `phone`, `email`, `email_domain`, `address`, `mailing_address`.
+
+## Chameleon Links
+
+The `chameleon_links` array surfaces potential successor/predecessor relationships — carriers that share enough identifying signals (address, officer name, phone, email) with another DOT that one may have been re-registered after the other's authority was revoked. Each entry includes:
+
+| Field | Description |
+|---|---|
+| `dot_number`, `legal_name`, `status` | The other carrier in the link. |
+| `signals` | Match dimensions, e.g. `["address", "officer"]`. |
+| `confidence` | `high`, `medium`, or `low`. Only **medium and high** trigger the `CHAMELEON_CARRIER` flag and the score cap at 45. |
+| `direction` | `successor_of` (this carrier may have replaced the other) or `predecessor_of`. |
+| `reason` | Human-readable summary. |
+
+## Point-in-Time (`?as_of=`)
+
+Pass `?as_of=2026-04-15` (or RFC3339 like `2026-04-15T12:00:00Z`) to reconstruct the carrier as it appeared on that date. The response shape is identical, with an extra top-level `as_of` block describing the reconstruction.
+
+```bash
+curl "https://api.dotlookup.dev/v1/carriers/2233855?as_of=2026-04-15"
+```
+
+```json
+{
+  "dot_number": "2233855",
+  "legal_name": "ACME TRUCKING LLC",
+  "status": "ACTIVE",
+  ...,
+  "as_of": {
+    "requested": "2026-04-15",
+    "reconstructed_from_etl_run_id": 449,
+    "reconstruction_horizon": "2026-04-22T08:00:00Z",
+    "limitations": [
+      "Safety, inspection, and crash data reflect the most recent ETL run, not the as-of date. Historical safety snapshots are not preserved.",
+      "MCS-150 date, MC number, entity type, equipment breakdown, mailing address, ZIP, and prior-revocation flags are not point-in-time — they reflect current state.",
+      "Fleet size and OOS rates may have drifted by small amounts under the change-feed recording thresholds (fleet: >20% or >10 units; OOS: >5pts with >=10 inspections).",
+      "Related-companies and chameleon-carrier signals are derivative of current state and are omitted from as-of responses.",
+      "Risk score is omitted — fetch /v1/carriers/{dot}/risk-history filtered to computed_at <= as_of for the score on that day."
+    ]
+  }
+}
+```
+
+### What's reconstructed
+
+- **Identity** (`legal_name`, `dba_name`, officers), **authority** (`carrier_status`, `authority_status`, `broker_authority_status`), **revocation flags**, **contact** (street, city, state, phone, email), and **fleet size** (subject to the recording threshold above) — all backward-replayed from [`etl_changes`](/endpoints/changes).
+- **Insurance** — filtered to policies that were in force at `as_of` based on each policy's `effective_date` / `expiration_date`.
+
+### What's NOT reconstructed
+
+- `risk_score` is **omitted** (set to `null`). Some scoring inputs (notably `mcs150_date`) are not tracked in the change feed, so a recomputed score would mix historical authority with current MCS-150 staleness and lie. Compose with [`/risk-history`](/endpoints/risk-history) instead.
+- `safety`, `safety_full` — current values, not point-in-time. The safety table is rebuilt every ETL run with no historical snapshot.
+- `chameleon_links`, `related_companies` — current-state derivative signals, omitted entirely.
+- `mcs150`, `mc_number`, `entity_type`, equipment breakdown, mailing address, ZIP, prior-revocation flags — current values.
+
+The full caveat list is enumerated in `as_of.limitations` on every response, so consumers can render disclaimers without hardcoding the list.
+
+### Errors
+
+| Error code | When |
+|---|---|
+| `INVALID_PARAM` (400) | `as_of` is not parseable as RFC3339 or `YYYY-MM-DD`. |
+| `AS_OF_BEFORE_HORIZON` (400) | `as_of` is earlier than `etl_changes_horizon` (52-week retention floor). |
+| `NO_HORIZON` (503) | Change feed is empty — the feature isn't available yet for this DotLookup instance. |
+| `NOT_FOUND` (404) | The DOT doesn't exist in current `carrier_mv`. Historical-only carriers (deregistered before this query) are not supported in v1. |

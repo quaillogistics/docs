@@ -1,20 +1,24 @@
 ---
 title: Login
 api: "POST /v1/auth/login"
-description: Retrieve your account and API key by email
+description: Retrieve your account and API key by email + password
 ---
 
-Retrieve your account details and API key using your email address.
+Retrieve your account details and API key. Requires both email and password — DotLookup intentionally returns the same `INVALID_CREDENTIALS` error for unknown emails and wrong passwords so accounts can't be enumerated.
 
 <ParamField body="email" type="string" required>
   The email address used to sign up
+</ParamField>
+
+<ParamField body="password" type="string" required>
+  Your account password (the one set during [signup](/endpoints/signup) or via [password reset](/endpoints/reset-password))
 </ParamField>
 
 <RequestExample>
 ```bash cURL
 curl -X POST https://api.dotlookup.dev/v1/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"email": "you@example.com"}'
+  -d '{"email": "you@example.com", "password": "your_password"}'
 ```
 
 ```python Python
@@ -22,6 +26,7 @@ import requests
 
 resp = requests.post("https://api.dotlookup.dev/v1/auth/login", json={
     "email": "you@example.com",
+    "password": "your_password",
 })
 account = resp.json()
 print(f"Your API key: {account['api_key']}")
@@ -31,7 +36,7 @@ print(f"Your API key: {account['api_key']}")
 const resp = await fetch("https://api.dotlookup.dev/v1/auth/login", {
   method: "POST",
   headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({ email: "you@example.com" }),
+  body: JSON.stringify({ email: "you@example.com", password: "your_password" }),
 });
 const account = await resp.json();
 console.log(`Your API key: ${account.api_key}`);
@@ -53,12 +58,25 @@ console.log(`Your API key: ${account.api_key}`);
 }
 ```
 
-```json 404
+```json 401
 {
   "error": {
-    "code": "NOT_FOUND",
-    "message": "no account found with this email"
+    "code": "INVALID_CREDENTIALS",
+    "message": "invalid email or password"
+  }
+}
+```
+
+```json 403
+{
+  "error": {
+    "code": "PASSWORD_REQUIRED",
+    "message": "this account does not have a password set — use the API key or reset your password"
   }
 }
 ```
 </ResponseExample>
+
+<Note>
+  Lost your password? Use [`POST /v1/auth/forgot-password`](/endpoints/forgot-password) to receive a reset link.
+</Note>

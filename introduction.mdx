@@ -25,23 +25,39 @@ curl https://api.dotlookup.dev/v1/carriers/2233855
 
 <CardGroup cols={2}>
   <Card title="Carrier Profiles" icon="truck" href="/endpoints/get-carrier">
-    Full carrier details: address, contact, fleet size, authority status
+    Full carrier details, fleet, authority, safety summary, insurance, and a composite [risk score](/endpoints/get-carrier#risk-score).
   </Card>
   <Card title="Search" icon="magnifying-glass" href="/endpoints/search-carriers">
-    Text search with filters, geo/radius support, and pagination
+    Text search with filters, geo/radius, and pagination across 1.6M+ carriers.
   </Card>
   <Card title="Safety Data" icon="shield-check" href="/endpoints/get-safety">
-    Inspections, OOS rates, crash statistics, BASIC violations
+    Inspections, OOS rates vs national average, crash statistics, BASIC violations.
   </Card>
   <Card title="Insurance" icon="file-contract" href="/endpoints/get-insurance">
-    Active insurance policies with coverage details
+    Active insurance policies with coverage details and per-policy status.
+  </Card>
+  <Card title="Risk Score History" icon="chart-line" href="/endpoints/risk-history">
+    Per-ETL snapshots of every carrier's composite trust score — see how a carrier's risk profile has moved over time.
+  </Card>
+  <Card title="Policy-Aware Scoring" icon="sliders" href="/endpoints/risk-score">
+    Compute a fresh score against your own broker/shipper underwriting thresholds. Stateless; nothing is persisted about your policy.
+  </Card>
+  <Card title="Point-in-Time" icon="clock-rotate-left" href="/endpoints/get-carrier#point-in-time-as-of">
+    `GET /v1/carriers/{dot}?as_of=2026-04-15` reconstructs the carrier as it appeared on a given date. Anchors evidence packets to historical state.
+  </Card>
+  <Card title="Watchlist + Webhooks" icon="bell" href="/endpoints/watchlist-webhook">
+    Subscribe to specific carriers and receive HMAC-signed webhook deliveries after every nightly ETL when their status changes.
   </Card>
 </CardGroup>
 
 ## Authentication
 
-Most endpoints work without authentication. [Sign up](/endpoints/signup) for an API key to get higher rate limits and access to the [bulk lookup](/endpoints/bulk-lookup) endpoint.
+Most endpoints work without authentication. [Sign up](/endpoints/signup) for an API key to unlock the [bulk lookup](/endpoints/bulk-lookup), [policy-aware risk score](/endpoints/risk-score), [watchlist](/endpoints/watchlist), and [webhook](/endpoints/watchlist-webhook) endpoints, plus higher rate limits on the public ones.
 
 <Card title="Authentication Guide" icon="key" href="/guides/authentication">
   Learn how to authenticate your requests
 </Card>
+
+## Data freshness
+
+DotLookup re-runs the FMCSA ETL pipeline daily. [`GET /v1/meta`](/endpoints/meta) exposes `data_freshness` (the timestamp of the most recent run), plus `risk_history_horizon` and `etl_changes_horizon` for the time-anchored endpoints.

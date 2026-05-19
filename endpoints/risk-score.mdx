@@ -1,0 +1,113 @@
+---
+title: Policy-aware Risk Score
+api: "POST /v1/carriers/{dot_number}/risk-score"
+description: Compute a carrier risk score against caller-supplied policy thresholds
+---
+
+Computes a fresh [risk score](/endpoints/get-carrier#risk-score) for a carrier against thresholds you supply. The default `GET /v1/carriers/{dot}` response uses federal-minimum thresholds (BIPD ≥ $750k, no cargo minimum); this endpoint lets brokers and shippers score against stricter internal policies without DotLookup having to know who you are or what your policy is.
+
+<Note>
+  This endpoint **requires an API key** and is **stateless** — DotLookup never persists your policy. Each call is pure compute over `(carrier data) × (policy)`.
+</Note>
+
+<Note>
+  Use `GET /v1/carriers/{dot}` for the default-policy score (cached and free of auth). Use this endpoint when your underwriting policy differs from the federal defaults.
+</Note>
+
+<ParamField path="dot_number" type="string" required>
+  The carrier's USDOT number
+</ParamField>
+
+<ParamField body="min_bipd" type="integer">
+  BIPD coverage floor in dollars. Carriers with active BIPD below this threshold get a `LOW_BIPD` warning flag and a -25 insurance penalty. Default: `750000` (federal minimum).
+</ParamField>
+
+<ParamField body="min_cargo" type="integer">
+  Cargo coverage floor in dollars. Carriers with cargo coverage above zero but below this threshold get a `LOW_CARGO_INSURANCE` warning flag and a -10 insurance penalty. Default: `0` (no minimum — only completely missing cargo is flagged).
+</ParamField>
+
+<RequestExample>
+```bash cURL
+curl -X POST https://api.dotlookup.dev/v1/carriers/2233855/risk-score \
+  -H "Content-Type: application/json" \
+  -H "X-API-Key: your_api_key_here" \
+  -d '{"min_bipd": 1000000, "min_cargo": 100000}'
+```
+
+```python Python
+import requests
+
+resp = requests.post(
+    "https://api.dotlookup.dev/v1/carriers/2233855/risk-score",
+    headers={"X-API-Key": "your_api_key"},
+    json={"min_bipd": 1_000_000, "min_cargo": 100_000},
+)
+result = resp.json()
+print(f"Score: {result['risk_score']['score']} ({result['risk_score']['grade']})")
+```
+
+```javascript JavaScript
+const resp = await fetch("https://api.dotlookup.dev/v1/carriers/2233855/risk-score", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+    "X-API-Key": "your_api_key",
+  },
+  body: JSON.stringify({ min_bipd: 1_000_000, min_cargo: 100_000 }),
+});
+const { risk_score } = await resp.json();
+```
+</RequestExample>
+
+<ResponseExample>
+```json 200
+{
+  "dot_number": "2233855",
+  "policy": {
+    "min_bipd": 1000000,
+    "min_cargo": 100000
+  },
+  "risk_score": {
+    "score": 72,
+    "grade": "C",
+    "tier": "Fair",
+    "confidence": "high",
+    "components": [
+      { "name": "Compliance", "score": 95, "weight": 40 },
+      { "name": "Safety", "score": 82, "weight": 35 },
+      { "name": "Insurance", "score": 55, "weight": 25 }
+    ],
+    "flags": [
+      {
+        "severity": "warning",
+        "code": "LOW_BIPD",
+        "message": "BIPD coverage below configured minimum ($1000000)"
+      }
+    ]
+  }
+}
+```
+</ResponseExample>
+
+## Behavior
+
+- **Empty body** (or `{}`) is valid — it returns the default-policy score, equivalent to `GET /v1/carriers/{dot}` but on a non-cached path that always recomputes from source data.
+- **Partial overrides** merge with the default — sending `{"min_bipd": 1000000}` gives you a $1M BIPD threshold with the default cargo behavior.
+- **Negative thresholds** are rejected with `400 INVALID_PARAM`.
+- **Response stamps the effective policy** — the `policy` field in the response is the merged policy that was actually applied. Stamp this on your evidence packet so the score can be reproduced later.
+- **Chameleon-carrier signals are reused** from the precomputed nightly snapshot — the cap behavior is identical to the default-policy score.
+
+## When stricter policies move the score
+
+The most common deltas:
+
+| Scenario | Default policy | Stricter policy | Score effect |
+|---|---|---|---|
+| Carrier with $750k BIPD | OK (federal min) | `min_bipd: 1000000` adds `LOW_BIPD` flag | -25 insurance, ~-6 overall |
+| Carrier with $50k cargo | OK (cargo present) | `min_cargo: 100000` adds `LOW_CARGO_INSURANCE` flag | -10 insurance, ~-3 overall |
+| Carrier with $0 BIPD | `NO_BIPD` flag + hard cap at 35 | Same — `min_bipd` doesn't change behavior when BIPD is zero | No incremental effect |
+| Carrier with $0 cargo | `NO_CARGO_INSURANCE` flag (-15 insurance) | Same — `min_cargo` only flags below-threshold, not absent | No incremental effect |
+
+## Rate limit and auth
+
+This endpoint counts against the **bulk-API rate limit** on your account, the same one used by [`POST /v1/carriers/bulk`](/endpoints/bulk-lookup). It returns `401 UNAUTHORIZED` without a valid `X-API-Key` header.

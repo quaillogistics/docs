@@ -4,10 +4,14 @@ api: "POST /v1/auth/signup"
 description: Create an account and receive an API key
 ---
 
-Create a new account and receive an API key. Only an email address is required.
+Create a new account and receive an API key. Email and password are required; the password is used to log in later and is also the credential needed for [password resets](/endpoints/forgot-password) and [API-key regeneration](/endpoints/account).
 
 <ParamField body="email" type="string" required>
   Your email address
+</ParamField>
+
+<ParamField body="password" type="string" required>
+  Your password. Must be **at least 8 characters**. Stored as a bcrypt hash.
 </ParamField>
 
 <ParamField body="name" type="string">
@@ -22,7 +26,7 @@ Create a new account and receive an API key. Only an email address is required.
 ```bash cURL
 curl -X POST https://api.dotlookup.dev/v1/auth/signup \
   -H "Content-Type: application/json" \
-  -d '{"email": "you@example.com", "name": "Jane Doe", "company": "Acme Logistics"}'
+  -d '{"email": "you@example.com", "password": "a-strong-password", "name": "Jane Doe", "company": "Acme Logistics"}'
 ```
 
 ```python Python
@@ -30,6 +34,7 @@ import requests
 
 resp = requests.post("https://api.dotlookup.dev/v1/auth/signup", json={
     "email": "you@example.com",
+    "password": "a-strong-password",
     "name": "Jane Doe",
     "company": "Acme Logistics",
 })
@@ -43,6 +48,7 @@ const resp = await fetch("https://api.dotlookup.dev/v1/auth/signup", {
   headers: { "Content-Type": "application/json" },
   body: JSON.stringify({
     email: "you@example.com",
+    password: "a-strong-password",
     name: "Jane Doe",
     company: "Acme Logistics",
   }),
