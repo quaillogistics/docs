@@ -5,16 +5,30 @@ description: How to authenticate requests to the DotLookup API
 
 # Authentication
 
-Most endpoints work **without authentication**. To get higher rate limits, include your API key in the `X-API-Key` header.
+Most endpoints are public — pass no header and they just work. Endpoints that touch account state, or that compute against caller-supplied policy, require an `X-API-Key` header.
 
 ```bash
-curl https://api.dotlookup.dev/v1/carriers/12345 \
+curl https://api.dotlookup.dev/v1/carriers/2233855 \
   -H "X-API-Key: your_api_key_here"
 ```
 
-<Note>
-  The `POST /v1/carriers/bulk` endpoint **requires** an API key. All other endpoints are accessible without one.
-</Note>
+## Which endpoints require an API key?
+
+| Endpoint | Auth required? |
+|---|---|
+| `GET /v1/carriers/{dot}` | Optional — but provides higher rate limits when present |
+| `GET /v1/carriers/{dot}/safety` | Optional |
+| `GET /v1/carriers/{dot}/insurance` | Optional |
+| `GET /v1/carriers/{dot}/risk-history` | Optional |
+| `GET /v1/carriers/{dot}/changes` | Optional |
+| `GET /v1/carriers/{dot}?as_of=...` | Optional |
+| `GET /v1/carriers/search` | Optional |
+| `GET /v1/changes/...` | Optional |
+| `GET /v1/meta`, `GET /v1/health` | Optional |
+| **`POST /v1/carriers/bulk`** | **Required** |
+| **`POST /v1/carriers/{dot}/risk-score`** | **Required** |
+| **All `/v1/watchlist/...` endpoints** | **Required** (including [webhook config](/endpoints/watchlist-webhook)) |
+| **`GET /v1/auth/me`, `POST /v1/auth/regenerate-key`** | **Required** |
 
 ## Getting an API Key
 
@@ -26,7 +40,7 @@ curl -X POST https://api.dotlookup.dev/v1/auth/signup \
   -d '{"email": "you@example.com", "name": "Your Name", "company": "Your Co"}'
 ```
 
-The response includes your `api_key`. Store it securely — it won't be shown again.
+The response includes your `api_key`. Store it securely — it won't be shown again. Lost it? Hit [`POST /v1/auth/regenerate-key`](/endpoints/account) (authenticated by the previous key) or use the password-reset flow.
 
 ## Checking Your Account
 
@@ -38,3 +52,7 @@ curl https://api.dotlookup.dev/v1/auth/me \
 ```
 
 See the [Account endpoint reference](/endpoints/account) for the full response shape.
+
+## Rate limits
+
+Anonymous traffic is throttled by IP at a public-good rate. Authenticated requests use your account's tier-specific limit and count against your usage. See [Rate Limits](/guides/rate-limits) for headers and behavior.

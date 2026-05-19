@@ -1,0 +1,110 @@
+---
+title: Get Risk Score History
+api: "GET /v1/carriers/{dot_number}/risk-history"
+description: Per-ETL snapshots of a carrier's composite risk score
+---
+
+Returns the persisted history of a carrier's [risk score](/endpoints/get-carrier#risk-score). A new row is written by the daily ETL only when the score, grade, tier, or flag set changes — not on every run — so the history reads as a clean trend of material events.
+
+<Note>
+  History is **store-on-change**. A flag appearing or disappearing counts as a material event even when the numeric score is unchanged; component sub-score drift does not.
+</Note>
+
+<ParamField path="dot_number" type="string" required>
+  The carrier's USDOT number
+</ParamField>
+
+<ParamField query="limit" type="integer" default="50">
+  Maximum rows to return. Clamped to `[1, 200]`; malformed input falls back to the default.
+</ParamField>
+
+<RequestExample>
+```bash cURL
+curl https://api.dotlookup.dev/v1/carriers/2233855/risk-history
+```
+
+```python Python
+import requests
+
+resp = requests.get("https://api.dotlookup.dev/v1/carriers/2233855/risk-history")
+history = resp.json()["data"]
+for row in history:
+    print(f"{row['computed_at']}  {row['grade']} ({row['score']})  flags={row['flag_codes']}")
+```
+
+```javascript JavaScript
+const resp = await fetch("https://api.dotlookup.dev/v1/carriers/2233855/risk-history");
+const { data } = await resp.json();
+```
+</RequestExample>
+
+<ResponseExample>
+```json 200
+{
+  "dot_number": "2233855",
+  "limit": 50,
+  "data": [
+    {
+      "dot_number": "2233855",
+      "etl_run_id": 462,
+      "computed_at": "2026-05-19T08:22:23Z",
+      "score": 78,
+      "grade": "C",
+      "tier": "Fair",
+      "flag_codes": ["FATAL_CRASHES", "HIGH_DRIVER_OOS"],
+      "components": [
+        { "name": "Compliance", "score": 90, "weight": 40 },
+        { "name": "Safety", "score": 60, "weight": 35 },
+        { "name": "Insurance", "score": 85, "weight": 25 }
+      ],
+      "flags": [
+        { "severity": "warning", "code": "FATAL_CRASHES", "message": "1 reported fatal crash(es)" },
+        { "severity": "warning", "code": "HIGH_DRIVER_OOS", "message": "Driver OOS rate is 2.1× the national average" }
+      ]
+    },
+    {
+      "dot_number": "2233855",
+      "etl_run_id": 426,
+      "computed_at": "2026-05-17T08:18:10Z",
+      "score": 82,
+      "grade": "B",
+      "tier": "Good",
+      "flag_codes": ["HIGH_DRIVER_OOS"],
+      "components": [
+        { "name": "Compliance", "score": 95, "weight": 40 },
+        { "name": "Safety", "score": 70, "weight": 35 },
+        { "name": "Insurance", "score": 85, "weight": 25 }
+      ],
+      "flags": [
+        { "severity": "warning", "code": "HIGH_DRIVER_OOS", "message": "Driver OOS rate is 1.8× the national average" }
+      ]
+    }
+  ]
+}
+```
+</ResponseExample>
+
+Rows are returned newest first. Carriers with no recorded history (e.g. a brand-new DOT, or a query against a database before its first ETL has run) get `{"data": []}` — the response is shape-stable, not a 404.
+
+## Fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `etl_run_id` | integer | The `etl_runs.id` of the **pages** step that produced this snapshot. One snapshot per ETL day. Cross-reference with [`GET /v1/changes/{etl_run_id}`](/endpoints/changes) for the carrier-level diffs from the same run. |
+| `computed_at` | timestamp | When the ETL run computed the score. All rows in a single ETL share one batch timestamp (~ minute resolution). |
+| `score`, `grade`, `tier` | — | Same shape as the live [risk score](/endpoints/get-carrier#risk-score). |
+| `flag_codes` | string[] | Sorted flag codes — the change-detection key alongside score/grade/tier. |
+| `components`, `flags` | object[] | Full component breakdown and flag list at the time, same shape as the live response. |
+
+## Pairing with `?as_of=`
+
+For an evidence-packet workflow ("what was the score on the day we dispatched the load?"), combine this endpoint with [point-in-time carrier lookup](/endpoints/get-carrier#point-in-time-as-of):
+
+1. Hit `GET /v1/carriers/{dot}?as_of=2026-04-15` for identity, authority, and insurance as of that date.
+2. Hit `GET /v1/carriers/{dot}/risk-history` and pick the newest row whose `computed_at <= 2026-04-15` for the score on that day.
+
+The carrier `?as_of=` response intentionally omits `risk_score` because some scoring inputs (e.g. MCS-150 date) are not point-in-time — composing with this endpoint is the honest path.
+
+## Horizon
+
+[`GET /v1/meta`](/endpoints/meta) exposes `risk_history_horizon` (the earliest `computed_at` in the table) and `risk_history_rows`. The horizon represents the date Phase 3 first deployed; queries return an empty array for carriers with no history rows, but never a 404.

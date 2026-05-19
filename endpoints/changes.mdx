@@ -1,0 +1,184 @@
+---
+title: Change Feed
+description: Diffs between consecutive ETL runs, by run or by carrier
+---
+
+After every nightly ETL, DotLookup computes a diff between the new data and the previous run, and records every material change as a row in the change feed. Use these endpoints to:
+
+- See **what changed across the whole population** on a given day (`/v1/changes/...`).
+- See **the history of a specific carrier** (`/v1/carriers/{dot}/changes`).
+
+Both feeds share the same row shape and category vocabulary. The retention window is **52 weeks**.
+
+## Categories
+
+| Category | Tracks |
+|---|---|
+| `new_carrier` | First appearance of a DOT in `carrier_mv`. |
+| `removed_carrier` | DOT disappeared from `carrier_mv`. |
+| `authority_change` | `carrier_status`, `authority_status`, or `broker_authority_status` changed. |
+| `revocation_pending` | A `*_rev_pend` flag flipped from empty to non-empty. |
+| `insurance_change` | `max_bipd` or `max_cargo` aggregate changed in the insurance summary. |
+| `safety_change` | `total_crashes` / `fatal_crashes` changed, OR OOS rate moved >5 points with ≥10 inspections. |
+| `fleet_change` | `total_power_units` or `total_drivers` moved >20% OR >10 units. |
+| `identity_change` | `legal_name`, `dba_name`, or one of the two `company_officer_*` fields changed. |
+| `contact_change` | Physical address, phone, or email changed. |
+
+Threshold-gated categories (`safety_change`, `fleet_change`) intentionally drop noisy small movements. If you need point-in-time fidelity below the thresholds, fall back to the [point-in-time carrier endpoint](/endpoints/get-carrier#point-in-time-as-of).
+
+---
+
+## List change-feed runs
+
+```
+GET /v1/changes
+```
+
+Paginated list of ETL runs with summary counts per category.
+
+<ParamField query="page" type="integer" default="1" />
+<ParamField query="per_page" type="integer" default="10">
+  Max 50.
+</ParamField>
+
+<ResponseExample>
+```json 200
+{
+  "runs": [
+    {
+      "etl_run_id": 462,
+      "batch_ts": "2026-05-19T08:00:00Z",
+      "summary": {
+        "new_carriers": 124,
+        "removed_carriers": 8,
+        "authority_changes": 1850,
+        "revocations_pending": 0,
+        "insurance_changes": 412,
+        "safety_changes": 690,
+        "fleet_changes": 55,
+        "identity_changes": 720,
+        "contact_changes": 195,
+        "total_changes": 3754
+      }
+    }
+  ],
+  "total": 28,
+  "page": 1,
+  "per_page": 10
+}
+```
+</ResponseExample>
+
+---
+
+## Latest run with detail
+
+```
+GET /v1/changes/latest
+```
+
+Same shape as [`GET /v1/changes/{etl_run_id}`](#specific-run-with-detail), but anchored to the newest run by `batch_ts`. Useful for "what changed last night?" dashboards.
+
+<ParamField query="category" type="string">
+  Filter to a single category (see [table above](#categories)).
+</ParamField>
+
+<ParamField query="state" type="string">
+  Two-letter state code. Joins `carrier_mv` to filter to carriers whose current physical state matches. Useful for portcos that only care about a region.
+</ParamField>
+
+<ParamField query="page" type="integer" default="1" />
+<ParamField query="per_page" type="integer" default="50">
+  Max 200.
+</ParamField>
+
+---
+
+## Specific run with detail
+
+```
+GET /v1/changes/{etl_run_id}
+```
+
+The full diff for one ETL run. Accepts the same `category`, `page`, and `per_page` query params as `/latest`.
+
+<ResponseExample>
+```json 200
+{
+  "etl_run_id": 462,
+  "batch_ts": "2026-05-19T08:00:00Z",
+  "summary": { /* same shape as /v1/changes */ },
+  "changes": [
+    {
+      "dot_number": "2233855",
+      "carrier_name": "ACME TRUCKING LLC",
+      "category": "authority_change",
+      "old_values": {
+        "carrier_status": "ACTIVE",
+        "authority_status": "ACTIVE",
+        "broker_authority_status": "NONE"
+      },
+      "new_values": {
+        "carrier_status": "INACTIVE",
+        "authority_status": "",
+        "broker_authority_status": "NONE"
+      }
+    }
+  ],
+  "total": 3754,
+  "page": 1,
+  "per_page": 50
+}
+```
+</ResponseExample>
+
+The `old_values` / `new_values` payload shape varies by category — each one carries only the fields that were tracked for that diff type. See [diff.sql](https://github.com/quaillogistics/dotlookup/blob/main/etl/diff/diff.sql) for the authoritative field list per category.
+
+---
+
+## History for a specific carrier
+
+```
+GET /v1/carriers/{dot_number}/changes
+```
+
+All change-feed rows for one DOT, newest first. Same shape as the per-run feed but scoped to one carrier across multiple runs.
+
+<ParamField path="dot_number" type="string" required />
+<ParamField query="category" type="string" />
+<ParamField query="page" type="integer" default="1" />
+<ParamField query="per_page" type="integer" default="50" />
+
+<RequestExample>
+```bash cURL
+curl https://api.dotlookup.dev/v1/carriers/2233855/changes
+```
+</RequestExample>
+
+<ResponseExample>
+```json 200
+{
+  "dot_number": "2233855",
+  "changes": [
+    {
+      "etl_run_id": 462,
+      "batch_ts": "2026-05-19T08:00:00Z",
+      "category": "authority_change",
+      "old_values": { "carrier_status": "ACTIVE" },
+      "new_values": { "carrier_status": "INACTIVE" }
+    }
+  ],
+  "total": 12,
+  "page": 1,
+  "per_page": 50
+}
+```
+</ResponseExample>
+
+Returns `{"changes": []}` (not 404) when the DOT has no recorded changes — consistent with other carrier-scoped endpoints.
+
+---
+
+## Horizon
+
+[`GET /v1/meta`](/endpoints/meta) exposes `etl_changes_horizon` — the earliest `batch_ts` in the table. Anything older than that has aged out of the 52-week retention window.

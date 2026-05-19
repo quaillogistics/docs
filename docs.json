@@ -40,7 +40,22 @@
               "endpoints/search-carriers",
               "endpoints/get-safety",
               "endpoints/get-insurance",
-              "endpoints/bulk-lookup"
+              "endpoints/bulk-lookup",
+              "endpoints/risk-score",
+              "endpoints/risk-history"
+            ]
+          },
+          {
+            "group": "Change Feed",
+            "pages": [
+              "endpoints/changes"
+            ]
+          },
+          {
+            "group": "Watchlist",
+            "pages": [
+              "endpoints/watchlist",
+              "endpoints/watchlist-webhook"
             ]
           },
           {

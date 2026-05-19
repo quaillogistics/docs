@@ -16,14 +16,23 @@ All errors return JSON with an `error` object containing `code` and `message` fi
 }
 ```
 
-## Error Codes
+## Error codes
 
-| Code | HTTP Status | Description |
-|------|-------------|-------------|
-| `NOT_FOUND` | 404 | Resource doesn't exist |
-| `INVALID_PARAM` | 400 | Bad request parameter |
-| `INVALID_BODY` | 400 | Invalid JSON request body |
-| `ACCOUNT_EXISTS` | 409 | Account with this email already exists |
-| `RATE_LIMITED` | 429 | Too many requests |
-| `UNAUTHORIZED` | 401 | Missing or invalid API key |
-| `INTERNAL_ERROR` | 500 | Server error |
+| Code | HTTP | Description |
+|---|---|---|
+| `NOT_FOUND` | 404 | Resource doesn't exist (e.g. unknown DOT, unknown change-feed run). |
+| `INVALID_PARAM` | 400 | Bad request parameter — malformed date, out-of-range value, missing required param. |
+| `INVALID_BODY` | 400 | Request body is missing or not valid JSON. |
+| `REQUEST_TOO_LARGE` | 413 | Body exceeded the per-endpoint size limit. |
+| `LIMIT_EXCEEDED` | 400 | Operation would exceed an account quota (e.g. watchlist cap, max DOTs per bulk request). |
+| `AS_OF_BEFORE_HORIZON` | 400 | `?as_of=` on [`/v1/carriers/{dot}`](/endpoints/get-carrier#point-in-time-as-of) is earlier than `etl_changes_horizon`. |
+| `NO_HORIZON` | 503 | `?as_of=` requested but the change feed is empty — feature isn't available yet for this instance. |
+| `UNAUTHORIZED` | 401 | Missing or invalid `X-API-Key` header on an endpoint that requires it. |
+| `INVALID_CREDENTIALS` | 401 | Email/password combo doesn't match an active account. |
+| `INVALID_TOKEN` | 400 | Password-reset token is unknown, expired, or already consumed. |
+| `PASSWORD_REQUIRED` | 400 | Login attempted on an account that hasn't set a password (sign in via API key or reset password). |
+| `ACCOUNT_EXISTS` | 409 | An account with this email already exists. |
+| `RATE_LIMITED` | 429 | Too many requests. See [Rate Limits](/guides/rate-limits) for the `Retry-After` header. |
+| `FORBIDDEN` | 403 | Internal-only endpoint accessed without the required service token. |
+| `UNHEALTHY` | 503 | Health probe failed (database unreachable). |
+| `INTERNAL_ERROR` | 500 | Server error. Includes a `request_id` in the response headers for support follow-up. |
