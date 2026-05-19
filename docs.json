@@ -63,7 +63,10 @@
             "pages": [
               "endpoints/signup",
               "endpoints/login",
-              "endpoints/account"
+              "endpoints/account",
+              "endpoints/forgot-password",
+              "endpoints/reset-password",
+              "endpoints/regenerate-key"
             ]
           },
           {

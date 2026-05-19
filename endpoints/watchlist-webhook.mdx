@@ -145,8 +145,11 @@ curl "https://api.dotlookup.dev/v1/watchlist/webhook/deliveries?limit=50" \
 
 ```json POST /test
 {
+  "attempts": 1,
+  "duration_ms": 90,
+  "error": "",
   "status_code": 200,
-  "delivered_in_ms": 142
+  "success": true
 }
 ```
 </ResponseExample>
