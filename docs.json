@@ -41,6 +41,7 @@
               "endpoints/get-safety",
               "endpoints/get-insurance",
               "endpoints/bulk-lookup",
+              "endpoints/bulk-lookup-mc",
               "endpoints/risk-score",
               "endpoints/risk-history"
             ]
