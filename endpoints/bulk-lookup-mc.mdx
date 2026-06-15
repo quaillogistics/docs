@@ -1,0 +1,95 @@
+---
+title: Bulk Lookup by MC
+api: "POST /v1/carriers/bulk-by-mc"
+description: Resolve multiple MC numbers to carriers in a single request
+---
+
+Resolve a list of MC (docket) numbers to carriers in a single request (max 500). The MC-keyed companion to [Bulk Lookup](/endpoints/bulk-lookup) — ideal for enriching records that only carry an MC number with the authoritative USDOT number, legal name, and status.
+
+The response separates the carriers that matched (`data`) from the MC numbers that matched nothing (`not_found`), so you can reconcile a batch in one pass instead of looping the [search](/endpoints/search-carriers) endpoint one MC at a time.
+
+<Note>
+  This endpoint **requires an API key**. See [Authentication](/guides/authentication).
+</Note>
+
+<Note>
+  Like [Bulk Lookup](/endpoints/bulk-lookup), this returns the core carrier profile only — **safety**, **insurance**, **risk score**, and **related companies** are not included. For those, fetch each carrier individually via [`GET /v1/carriers/{dot_number}`](/endpoints/get-carrier).
+</Note>
+
+<Tip>
+  Send MC numbers in their **bare, canonical form** — no `MC` prefix and no leading zeros (e.g. `55889`, not `MC-0055889`). Unlike the search endpoint, results are **not** filtered by status, so an MC belonging to an inactive carrier still resolves.
+</Tip>
+
+<ParamField body="mc_numbers" type="string[]" required>
+  Array of MC numbers to resolve (max 500). Blank entries and duplicates are ignored.
+</ParamField>
+
+<RequestExample>
+```bash cURL
+curl -X POST https://api.dotlookup.dev/v1/carriers/bulk-by-mc \
+  -H "Content-Type: application/json" \
+  -H "X-API-Key: your_api_key_here" \
+  -d '{"mc_numbers": ["747866", "000000"]}'
+```
+
+```python Python
+import requests
+
+resp = requests.post(
+    "https://api.dotlookup.dev/v1/carriers/bulk-by-mc",
+    headers={"X-API-Key": "your_api_key"},
+    json={"mc_numbers": ["747866", "000000"]},
+)
+result = resp.json()
+carriers = result["data"]
+not_found = result["not_found"]
+```
+
+```javascript JavaScript
+const resp = await fetch("https://api.dotlookup.dev/v1/carriers/bulk-by-mc", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+    "X-API-Key": "your_api_key",
+  },
+  body: JSON.stringify({ mc_numbers: ["747866", "000000"] }),
+});
+const { data, not_found } = await resp.json();
+```
+</RequestExample>
+
+<ResponseExample>
+```json 200
+{
+  "data": [
+    {
+      "dot_number": "2233855",
+      "mc_number": "747866",
+      "legal_name": "ACME TRUCKING LLC",
+      "dba_name": "ACME FREIGHT",
+      "status": "ACTIVE",
+      "address": {
+        "street": "123 Main St",
+        "city": "Dallas",
+        "state": "TX",
+        "zip": "75201",
+        "lat": 32.7767,
+        "lon": -96.797
+      },
+      "contact": { "phone": "(214) 555-0100", "email": "info@acmetrucking.com" },
+      "fleet": { "power_units": 45, "drivers": 52 },
+      "authority": {
+        "status": "AUTHORIZED FOR HHG",
+        "common_authority_date": "2012-06-15T00:00:00Z",
+        "contract_authority_date": null,
+        "broker_authority": "N"
+      },
+      "mcs150": { "date": "2024-06-01T00:00:00Z", "mileage": 1200000, "mileage_year": 2023 },
+      "cargo_carried": ["General Freight"],
+      "operation_classification": ["Authorized For Hire"]
+    }
+  ],
+  "not_found": ["000000"]
+}
+```
+</ResponseExample>
