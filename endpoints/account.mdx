@@ -10,6 +10,10 @@ Returns your account details and current usage statistics. Requires authenticati
   This endpoint **requires an API key**. See [Authentication](/guides/authentication).
 </Note>
 
+<Warning>
+  The `api_key` in this response is **masked** — you get the first 7 and last 4 characters only. The full key is returned just once, by [signup](/endpoints/signup), [login](/endpoints/login), and [regenerate-key](/endpoints/regenerate-key). If you have lost your key, regenerate it; you cannot recover it here.
+</Warning>
+
 <RequestExample>
 ```bash cURL
 curl https://api.dotlookup.dev/v1/auth/me \
@@ -44,10 +48,11 @@ console.log(`Requests today: ${data.usage.requests_today}`);
     "email": "you@example.com",
     "name": "Jane Doe",
     "company": "Acme Logistics",
-    "api_key": "dl_a1b2c3d4e5f6...",
+    "api_key": "dl_a1b2...ef90",
     "tier": "default",
     "rate_limit": 100,
     "is_active": true,
+    "has_password": true,
     "created_at": "2025-03-20T14:30:00Z"
   },
   "usage": {

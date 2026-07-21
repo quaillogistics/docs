@@ -110,4 +110,4 @@ The most common deltas:
 
 ## Rate limit and auth
 
-This endpoint counts against the **bulk-API rate limit** on your account, the same one used by [`POST /v1/carriers/bulk`](/endpoints/bulk-lookup). It returns `401 UNAUTHORIZED` without a valid `X-API-Key` header.
+This endpoint counts against **your account's rate limit** — the single shared limit used by every authenticated request, including [`POST /v1/carriers/bulk`](/endpoints/bulk-lookup) and ordinary carrier lookups. There is no separate bulk-API pool. It returns `401 UNAUTHORIZED` without a valid `X-API-Key` header.

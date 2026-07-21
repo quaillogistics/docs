@@ -24,7 +24,7 @@ curl https://api.dotlookup.dev/v1/carriers/2233855 \
 | `GET /v1/carriers/{dot}?as_of=...` | Optional |
 | `GET /v1/carriers/search` | Optional |
 | `GET /v1/changes/...` | Optional |
-| `GET /v1/meta`, `GET /v1/health` | Optional |
+| `GET /v1/meta`, `GET /v1/health` | Not used — these are unauthenticated and unthrottled; an API key is ignored |
 | **`POST /v1/carriers/bulk`** | **Required** |
 | **`POST /v1/carriers/{dot}/risk-score`** | **Required** |
 | **All `/v1/watchlist/...` endpoints** | **Required** (including [webhook config](/endpoints/watchlist-webhook)) |
@@ -32,15 +32,15 @@ curl https://api.dotlookup.dev/v1/carriers/2233855 \
 
 ## Getting an API Key
 
-Sign up from the [DotLookup Dashboard](https://dotlookup.dev/login) or via the API:
+Sign up from the [DotLookup Dashboard](https://dotlookup.dev/login) or via the API. `email` and `password` are both required, and the password must be at least 8 characters:
 
 ```bash
 curl -X POST https://api.dotlookup.dev/v1/auth/signup \
   -H "Content-Type: application/json" \
-  -d '{"email": "you@example.com", "name": "Your Name", "company": "Your Co"}'
+  -d '{"email": "you@example.com", "password": "your-password", "name": "Your Name", "company": "Your Co"}'
 ```
 
-The response includes your `api_key`. Store it securely — it won't be shown again. Lost it? Hit [`POST /v1/auth/regenerate-key`](/endpoints/account) (authenticated by the previous key) or use the password-reset flow.
+The response includes your `api_key`. Store it securely — it won't be shown again. Lost it? Hit [`POST /v1/auth/regenerate-key`](/endpoints/regenerate-key) (authenticated by the previous key) or use the password-reset flow.
 
 ## Checking Your Account
 
