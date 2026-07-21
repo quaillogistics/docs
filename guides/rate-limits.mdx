@@ -7,9 +7,13 @@ description: Request rate limits and throttling behavior
 
 Anonymous requests are limited to **100 requests per minute** per IP address. Authenticated requests use your account's rate limit.
 
+The credential endpoints are throttled separately and much harder: `POST /v1/auth/signup`, `/v1/auth/login`, `/v1/auth/forgot-password`, and `/v1/auth/reset-password` share a limit of **10 requests per minute**. If you are retrying a signup or login in a loop, that is the limit you will hit first.
+
+`GET /v1/health` and `GET /v1/meta` are not rate limited at all.
+
 ## Response Headers
 
-Every response includes rate limit headers:
+Rate limited responses include these headers. The two unthrottled endpoints above return none of them:
 
 | Header | Description |
 |--------|-------------|

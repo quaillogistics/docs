@@ -128,9 +128,31 @@ curl "https://api.dotlookup.dev/v1/watchlist/check?dot_number=2233855" \
 GET /v1/watchlist/changes
 ```
 
-Returns recent diffs (across all ETL runs in your account's retention window) for carriers on your watchlist. The shape mirrors [`GET /v1/changes/{etl_run_id}`](/endpoints/changes) — same `category`, `old_values`, `new_values` fields.
+Returns recent diffs for carriers on your watchlist. The shape mirrors [`GET /v1/changes/{etl_run_id}`](/endpoints/changes) — same `category`, `old_values`, `new_values` fields.
 
 Use this for catch-up after a webhook delivery failure or when wiring up a new dashboard.
+
+<Warning>
+  This endpoint looks back **30 days**, not the 52-week window used by the [change feed](/endpoints/changes). If your integration has been offline longer than 30 days, those changes are not available here.
+</Warning>
+
+<ParamField query="since" type="string">
+  Return only changes at or after this instant. Accepts RFC3339 (`2026-05-01T00:00:00Z`) or a bare date (`2026-05-01`), which is read as midnight UTC. Narrows within the 30-day window — it never reaches further back
+</ParamField>
+
+<ParamField query="category" type="string">
+  Filter to a single change category, using the same values as the [change feed](/endpoints/changes)
+</ParamField>
+
+<ParamField query="page" type="integer" default="1">
+  Page number
+</ParamField>
+
+<ParamField query="per_page" type="integer" default="25">
+  Results per page (max: 100)
+</ParamField>
+
+For an incremental feed, pass the `batch_ts` of the newest change you have already processed as `since` on the next poll.
 
 <RequestExample>
 ```bash cURL
