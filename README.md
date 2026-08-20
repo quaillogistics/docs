@@ -53,3 +53,15 @@ Install our GitHub app from your [dashboard](https://dashboard.mintlify.com/sett
 
 ### Resources
 - [Mintlify documentation](https://mintlify.com/docs)
+
+## openapi.json
+
+The OpenAPI 3.1 spec for `https://api.dotlookup.dev`. API gateways register
+DotLookup from the raw URL of this file
+(`https://raw.githubusercontent.com/quaillogistics/docs/main/openapi.json`)
+and re-pull it on refresh, so **paths and operationIds are contract**: renaming
+an operationId (e.g. `searchCarriers`) renames the derived tool on the next
+refresh and breaks anything addressing it. Adding new operations is always
+safe. The hand-written pages under `endpoints/` should be kept consistent with
+it; wiring Mintlify to render the API Reference tab directly from this spec is
+the eventual goal.
