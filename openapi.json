@@ -3,29 +3,53 @@
   "info": {
     "title": "DotLookup",
     "version": "1.0.0",
-    "description": "Free, open REST API for FMCSA carrier data. Most read endpoints are public; an X-API-Key raises rate limits and unlocks bulk/watchlist. Hand-authored from https://docs.dotlookup.dev — the API does not publish a spec."
+    "description": "Free, open REST API for FMCSA carrier data. Most read endpoints are public; an X-API-Key raises rate limits and unlocks bulk/watchlist. Hand-authored from https://docs.dotlookup.dev \u2014 the API does not publish a spec."
   },
-  "servers": [{ "url": "https://api.dotlookup.dev" }],
+  "servers": [
+    {
+      "url": "https://api.dotlookup.dev"
+    }
+  ],
   "components": {
     "securitySchemes": {
-      "apiKey": { "type": "apiKey", "in": "header", "name": "X-API-Key" }
+      "apiKey": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-API-Key"
+      }
     },
     "schemas": {
       "RiskScore": {
         "type": "object",
         "properties": {
-          "score": { "type": "integer", "description": "0 (worst) to 100 (best)" },
-          "grade": { "type": "string", "description": "A >=90, B >=80, C >=65, D >=45, F <45" },
-          "tier": { "type": "string" },
-          "confidence": { "type": "string" },
+          "score": {
+            "type": "integer",
+            "description": "0 (worst) to 100 (best)"
+          },
+          "grade": {
+            "type": "string",
+            "description": "A >=90, B >=80, C >=65, D >=45, F <45"
+          },
+          "tier": {
+            "type": "string"
+          },
+          "confidence": {
+            "type": "string"
+          },
           "components": {
             "type": "array",
             "items": {
               "type": "object",
               "properties": {
-                "name": { "type": "string" },
-                "score": { "type": "integer" },
-                "weight": { "type": "integer" }
+                "name": {
+                  "type": "string"
+                },
+                "score": {
+                  "type": "integer"
+                },
+                "weight": {
+                  "type": "integer"
+                }
               }
             }
           },
@@ -34,9 +58,15 @@
             "items": {
               "type": "object",
               "properties": {
-                "severity": { "type": "string" },
-                "code": { "type": "string" },
-                "message": { "type": "string" }
+                "severity": {
+                  "type": "string"
+                },
+                "code": {
+                  "type": "string"
+                },
+                "message": {
+                  "type": "string"
+                }
               }
             }
           }
@@ -45,78 +75,242 @@
       "Carrier": {
         "type": "object",
         "properties": {
-          "dot_number": { "type": "string" },
-          "mc_number": { "type": ["string", "null"] },
-          "legal_name": { "type": "string" },
-          "dba_name": { "type": ["string", "null"] },
-          "status": { "type": "string" },
+          "dot_number": {
+            "type": "string"
+          },
+          "mc_number": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "legal_name": {
+            "type": "string"
+          },
+          "dba_name": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "status": {
+            "type": "string"
+          },
           "address": {
             "type": "object",
             "properties": {
-              "street": { "type": ["string", "null"] },
-              "city": { "type": ["string", "null"] },
-              "state": { "type": ["string", "null"] },
-              "zip": { "type": ["string", "null"] },
-              "lat": { "type": ["number", "null"] },
-              "lon": { "type": ["number", "null"] }
+              "street": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "city": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "state": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "zip": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "lat": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "lon": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              }
             }
           },
           "contact": {
             "type": "object",
             "properties": {
-              "phone": { "type": ["string", "null"] },
-              "email": { "type": ["string", "null"] }
+              "phone": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "email": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
             }
           },
           "fleet": {
             "type": "object",
             "properties": {
-              "power_units": { "type": ["integer", "null"] },
-              "drivers": { "type": ["integer", "null"] }
+              "power_units": {
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              },
+              "drivers": {
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              }
             }
           },
           "authority": {
             "type": "object",
             "properties": {
-              "status": { "type": ["string", "null"] },
-              "common_authority_date": { "type": ["string", "null"] },
-              "contract_authority_date": { "type": ["string", "null"] },
-              "broker_authority": { "type": ["string", "null"] }
+              "status": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "common_authority_date": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "contract_authority_date": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "broker_authority": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
             }
           },
-          "cargo_carried": { "type": "array", "items": { "type": "string" } },
-          "operation_classification": { "type": "array", "items": { "type": "string" } },
+          "cargo_carried": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "operation_classification": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
           "safety": {
             "type": "object",
             "properties": {
-              "driver_oos_rate": { "type": ["number", "null"] },
-              "driver_oos_rate_national": { "type": ["number", "null"] },
-              "vehicle_oos_rate": { "type": ["number", "null"] },
-              "vehicle_oos_rate_national": { "type": ["number", "null"] },
-              "total_crashes": { "type": ["integer", "null"] },
-              "fatal_crashes": { "type": ["integer", "null"] },
-              "unsafe_driving_violations": { "type": ["integer", "null"] },
-              "hos_violations": { "type": ["integer", "null"] }
+              "driver_oos_rate": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "driver_oos_rate_national": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "vehicle_oos_rate": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "vehicle_oos_rate_national": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "total_crashes": {
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              },
+              "fatal_crashes": {
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              },
+              "unsafe_driving_violations": {
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              },
+              "hos_violations": {
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              }
             }
           },
           "insurance": {
             "type": "object",
             "properties": {
-              "bipd_on_file": { "type": ["integer", "null"] },
-              "cargo_on_file": { "type": ["integer", "null"] }
+              "bipd_on_file": {
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              },
+              "cargo_on_file": {
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              }
             }
           },
-          "risk_score": { "$ref": "#/components/schemas/RiskScore" },
+          "risk_score": {
+            "$ref": "#/components/schemas/RiskScore"
+          },
           "related_companies": {
             "type": "array",
             "items": {
               "type": "object",
               "properties": {
-                "dot_number": { "type": "string" },
-                "legal_name": { "type": "string" },
-                "status": { "type": "string" },
-                "entity_type": { "type": ["string", "null"] },
-                "match_types": { "type": "array", "items": { "type": "string" } }
+                "dot_number": {
+                  "type": "string"
+                },
+                "legal_name": {
+                  "type": "string"
+                },
+                "status": {
+                  "type": "string"
+                },
+                "entity_type": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "match_types": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
               }
             }
           },
@@ -125,15 +319,332 @@
             "items": {
               "type": "object",
               "properties": {
-                "dot_number": { "type": "string" },
-                "legal_name": { "type": "string" },
-                "status": { "type": "string" },
-                "signals": { "type": "array", "items": { "type": "string" } },
-                "confidence": { "type": "string" },
-                "direction": { "type": "string" },
-                "reason": { "type": "string" }
+                "dot_number": {
+                  "type": "string"
+                },
+                "legal_name": {
+                  "type": "string"
+                },
+                "status": {
+                  "type": "string"
+                },
+                "signals": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "confidence": {
+                  "type": "string"
+                },
+                "direction": {
+                  "type": "string"
+                },
+                "reason": {
+                  "type": "string"
+                }
               }
             }
+          }
+        }
+      },
+      "InspectionGroup": {
+        "type": "object",
+        "description": "One inspection category's totals with the national OOS-rate baseline.",
+        "properties": {
+          "total": {
+            "type": "integer"
+          },
+          "oos": {
+            "type": "integer",
+            "description": "Out-of-service inspections"
+          },
+          "oos_rate": {
+            "type": "number"
+          },
+          "national_avg": {
+            "type": "number",
+            "description": "National average OOS rate for this category"
+          }
+        }
+      },
+      "SafetyDetail": {
+        "type": "object",
+        "description": "Roadside safety record: inspections by category vs national averages, crashes, violation counts.",
+        "properties": {
+          "dot_number": {
+            "type": "string"
+          },
+          "legal_name": {
+            "type": "string"
+          },
+          "inspections": {
+            "type": "object",
+            "properties": {
+              "driver": {
+                "$ref": "#/components/schemas/InspectionGroup"
+              },
+              "vehicle": {
+                "$ref": "#/components/schemas/InspectionGroup"
+              },
+              "hazmat": {
+                "$ref": "#/components/schemas/InspectionGroup"
+              },
+              "overall": {
+                "$ref": "#/components/schemas/InspectionGroup"
+              }
+            }
+          },
+          "crashes": {
+            "type": "object",
+            "properties": {
+              "fatal": {
+                "type": "integer"
+              },
+              "injury": {
+                "type": "integer"
+              },
+              "towaway": {
+                "type": "integer"
+              },
+              "total": {
+                "type": "integer"
+              },
+              "rate": {
+                "type": "number"
+              }
+            }
+          },
+          "violations": {
+            "type": "object",
+            "properties": {
+              "unsafe_driving": {
+                "type": "integer"
+              },
+              "driver_fitness": {
+                "type": "integer"
+              },
+              "hos": {
+                "type": "integer",
+                "description": "Hours-of-service violations"
+              },
+              "drug_alcohol": {
+                "type": "integer"
+              },
+              "vehicle_maint": {
+                "type": "integer"
+              }
+            }
+          }
+        }
+      },
+      "InsurancePolicy": {
+        "type": "object",
+        "properties": {
+          "policy_type": {
+            "type": "string",
+            "description": "BIPD or CARGO"
+          },
+          "insurer_name": {
+            "type": "string"
+          },
+          "policy_number": {
+            "type": "string"
+          },
+          "coverage_amount": {
+            "type": "integer",
+            "description": "USD"
+          },
+          "effective_date": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "expiration_date": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "form_code": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "description": "active or inactive at query time"
+          }
+        }
+      },
+      "InsuranceDetail": {
+        "type": "object",
+        "description": "Active insurance filings. Null/absent policies means the feed was unavailable \u2014 see the carrier profile's insuranceAvailable caveat.",
+        "properties": {
+          "dot_number": {
+            "type": "string"
+          },
+          "legal_name": {
+            "type": "string"
+          },
+          "policies": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InsurancePolicy"
+            }
+          }
+        }
+      },
+      "RiskComponent": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Compliance, Safety, or Insurance"
+          },
+          "score": {
+            "type": "integer"
+          },
+          "weight": {
+            "type": "integer",
+            "description": "Percent weight in the composite score"
+          }
+        }
+      },
+      "RiskFlag": {
+        "type": "object",
+        "properties": {
+          "severity": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          }
+        }
+      },
+      "RiskHistorySnapshot": {
+        "type": "object",
+        "description": "One historical risk-score computation for the carrier.",
+        "properties": {
+          "dot_number": {
+            "type": "string"
+          },
+          "etl_run_id": {
+            "type": "integer"
+          },
+          "computed_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "score": {
+            "type": "integer"
+          },
+          "grade": {
+            "type": "string"
+          },
+          "tier": {
+            "type": "string"
+          },
+          "flag_codes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "components": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RiskComponent"
+            }
+          },
+          "flags": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RiskFlag"
+            }
+          }
+        }
+      },
+      "RiskHistoryResponse": {
+        "type": "object",
+        "description": "Dated risk-score snapshots, newest first; the horizon is /v1/meta's risk_history_horizon.",
+        "properties": {
+          "dot_number": {
+            "type": "string"
+          },
+          "limit": {
+            "type": "integer"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RiskHistorySnapshot"
+            }
+          }
+        }
+      },
+      "ETLRun": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "dataset": {
+            "type": "string"
+          },
+          "started_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "finished_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "rows_processed": {
+            "type": "integer"
+          },
+          "rows_errored": {
+            "type": "integer"
+          },
+          "status": {
+            "type": "string"
+          },
+          "error_message": {
+            "type": "string"
+          }
+        }
+      },
+      "MetaResponse": {
+        "type": "object",
+        "description": "Dataset coverage and freshness \u2014 check data_freshness before treating an answer as current.",
+        "properties": {
+          "total_carriers": {
+            "type": "integer"
+          },
+          "active_carriers": {
+            "type": "integer"
+          },
+          "carriers_with_safety": {
+            "type": "integer"
+          },
+          "carriers_with_insurance": {
+            "type": "integer"
+          },
+          "last_etl_run": {
+            "$ref": "#/components/schemas/ETLRun"
+          },
+          "data_freshness": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "risk_history_horizon": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "risk_history_rows": {
+            "type": "integer"
+          },
+          "etl_changes_horizon": {
+            "type": "string",
+            "format": "date-time"
           }
         }
       }
@@ -144,14 +655,41 @@
       "get": {
         "operationId": "getHealth",
         "summary": "Service health. Unauthenticated and never rate limited.",
-        "responses": { "200": { "description": "OK", "content": { "application/json": { "schema": { "type": "object", "properties": { "status": { "type": "string" } } } } } } }
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/v1/meta": {
       "get": {
         "operationId": "getMeta",
         "summary": "Dataset metadata and ETL freshness. Unauthenticated and never rate limited.",
-        "responses": { "200": { "description": "OK", "content": { "application/json": { "schema": { "type": "object" } } } } }
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MetaResponse"
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/v1/carriers/search": {
@@ -159,22 +697,117 @@
         "operationId": "searchCarriers",
         "summary": "Paginated carrier search by text, filters, and optional geo/radius.",
         "description": "Geo resolution is state-level (every carrier in a state shares the state centroid), so a radius under ~200 miles returns few or no results. Prefer state= or city= for location filtering.",
-        "security": [{ "apiKey": [] }, {}],
+        "security": [
+          {
+            "apiKey": []
+          },
+          {}
+        ],
         "parameters": [
-          { "name": "q", "in": "query", "schema": { "type": "string" }, "description": "Text search across legal name and DBA name" },
-          { "name": "mc_number", "in": "query", "schema": { "type": "string" } },
-          { "name": "city", "in": "query", "schema": { "type": "string" } },
-          { "name": "state", "in": "query", "schema": { "type": "string" }, "description": "2-letter code" },
-          { "name": "status", "in": "query", "schema": { "type": "string", "default": "ACTIVE" }, "description": "Use ALL to include inactive carriers" },
-          { "name": "cargo", "in": "query", "schema": { "type": "string" } },
-          { "name": "entity_type", "in": "query", "schema": { "type": "string" }, "description": "CARRIER, BROKER, FREIGHT FORWARDER, SHIPPER" },
-          { "name": "officer", "in": "query", "schema": { "type": "string" } },
-          { "name": "phone", "in": "query", "schema": { "type": "string" } },
-          { "name": "lat", "in": "query", "schema": { "type": "number" } },
-          { "name": "lon", "in": "query", "schema": { "type": "number" } },
-          { "name": "radius", "in": "query", "schema": { "type": "number" }, "description": "Miles; practical floor ~200" },
-          { "name": "limit", "in": "query", "schema": { "type": "integer" } },
-          { "name": "offset", "in": "query", "schema": { "type": "integer" } }
+          {
+            "name": "q",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Text search across legal name and DBA name"
+          },
+          {
+            "name": "mc_number",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "city",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "state",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "2-letter code"
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "default": "ACTIVE"
+            },
+            "description": "Use ALL to include inactive carriers"
+          },
+          {
+            "name": "cargo",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "entity_type",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "CARRIER, BROKER, FREIGHT FORWARDER, SHIPPER"
+          },
+          {
+            "name": "officer",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "phone",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "lat",
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "lon",
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "radius",
+            "in": "query",
+            "schema": {
+              "type": "number"
+            },
+            "description": "Miles; practical floor ~200"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            }
+          }
         ],
         "responses": {
           "200": {
@@ -184,16 +817,29 @@
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "results": { "type": "array", "items": { "$ref": "#/components/schemas/Carrier" } },
-                    "total": { "type": "integer" },
-                    "limit": { "type": "integer" },
-                    "offset": { "type": "integer" }
+                    "results": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Carrier"
+                      }
+                    },
+                    "total": {
+                      "type": "integer"
+                    },
+                    "limit": {
+                      "type": "integer"
+                    },
+                    "offset": {
+                      "type": "integer"
+                    }
                   }
                 }
               }
             }
           },
-          "429": { "description": "Rate limited (RATE_LIMITED); see Retry-After" }
+          "429": {
+            "description": "Rate limited (RATE_LIMITED); see Retry-After"
+          }
         }
       }
     },
@@ -201,15 +847,47 @@
       "get": {
         "operationId": "getCarrier",
         "summary": "Full carrier profile by DOT number, including risk score and chameleon signals.",
-        "security": [{ "apiKey": [] }, {}],
+        "security": [
+          {
+            "apiKey": []
+          },
+          {}
+        ],
         "parameters": [
-          { "name": "dot_number", "in": "path", "required": true, "schema": { "type": "string" } },
-          { "name": "as_of", "in": "query", "schema": { "type": "string" }, "description": "YYYY-MM-DD or RFC3339; reconstructs the carrier as of that date" }
+          {
+            "name": "dot_number",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "as_of",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "YYYY-MM-DD or RFC3339; reconstructs the carrier as of that date"
+          }
         ],
         "responses": {
-          "200": { "description": "OK", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Carrier" } } } },
-          "404": { "description": "Carrier not found" },
-          "429": { "description": "Rate limited (RATE_LIMITED); see Retry-After" }
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Carrier"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Carrier not found"
+          },
+          "429": {
+            "description": "Rate limited (RATE_LIMITED); see Retry-After"
+          }
         }
       }
     },
@@ -217,12 +895,39 @@
       "get": {
         "operationId": "getCarrierSafety",
         "summary": "Inspections, OOS rates vs national average, crashes, and BASIC violations.",
-        "security": [{ "apiKey": [] }, {}],
-        "parameters": [{ "name": "dot_number", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "security": [
+          {
+            "apiKey": []
+          },
+          {}
+        ],
+        "parameters": [
+          {
+            "name": "dot_number",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
-          "200": { "description": "OK", "content": { "application/json": { "schema": { "type": "object" } } } },
-          "404": { "description": "No safety record. Coverage is partial — absence means UNKNOWN, not clean." },
-          "429": { "description": "Rate limited" }
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SafetyDetail"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No safety record. Coverage is partial \u2014 absence means UNKNOWN, not clean."
+          },
+          "429": {
+            "description": "Rate limited"
+          }
         }
       }
     },
@@ -230,11 +935,36 @@
       "get": {
         "operationId": "getCarrierInsurance",
         "summary": "Active insurance policies with coverage details and per-policy status.",
-        "security": [{ "apiKey": [] }, {}],
-        "parameters": [{ "name": "dot_number", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "security": [
+          {
+            "apiKey": []
+          },
+          {}
+        ],
+        "parameters": [
+          {
+            "name": "dot_number",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
-          "200": { "description": "OK", "content": { "application/json": { "schema": { "type": "object" } } } },
-          "429": { "description": "Rate limited" }
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InsuranceDetail"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited"
+          }
         }
       }
     },
@@ -242,11 +972,36 @@
       "get": {
         "operationId": "getCarrierRiskHistory",
         "summary": "Per-ETL snapshots of the carrier's composite trust score over time.",
-        "security": [{ "apiKey": [] }, {}],
-        "parameters": [{ "name": "dot_number", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "security": [
+          {
+            "apiKey": []
+          },
+          {}
+        ],
+        "parameters": [
+          {
+            "name": "dot_number",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
-          "200": { "description": "OK", "content": { "application/json": { "schema": { "type": "object" } } } },
-          "429": { "description": "Rate limited" }
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RiskHistoryResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited"
+          }
         }
       }
     }
