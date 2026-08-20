@@ -629,7 +629,35 @@
             "type": "integer"
           },
           "last_etl_run": {
-            "$ref": "#/components/schemas/ETLRun"
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "integer"
+              },
+              "dataset": {
+                "type": "string"
+              },
+              "started_at": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "finished_at": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "rows_processed": {
+                "type": "integer"
+              },
+              "rows_errored": {
+                "type": "integer"
+              },
+              "status": {
+                "type": "string"
+              },
+              "error_message": {
+                "type": "string"
+              }
+            }
           },
           "data_freshness": {
             "type": "string",
@@ -689,7 +717,8 @@
               }
             }
           }
-        }
+        },
+        "description": "Dataset metadata and ETL freshness. Unauthenticated and never rate limited. Includes risk_history_horizon."
       }
     },
     "/v1/carriers/search": {
