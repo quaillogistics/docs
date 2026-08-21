@@ -10,6 +10,14 @@ Paginated search with text, filters, and optional geo/radius support.
   When using geo search (`lat`/`lon`), each result includes a `distance_miles` field with the distance from the search point.
 </Note>
 
+<Note>
+  **Every result carries its risk score.** Each row includes `risk_score`, `risk_grade`, and `risk_tier`, so you can rank or filter a page of results without a follow-up [Get Carrier](/endpoints/get-carrier) call per row.
+
+  All three are `null` when the carrier has no computed score. `risk_score` of `0` is a real score — the worst one — so test for `null` explicitly rather than for falsiness.
+
+  The full component breakdown and risk flags stay on the carrier profile. Use search to narrow, then fetch the profile for the few carriers you care about.
+</Note>
+
 <Warning>
   **Geo resolution is state-level.** Every carrier in a state shares the same geocoded point — the centroid of that state. As a result:
 
@@ -142,6 +150,9 @@ const results = await resp.json();
       "driver_oos_national": 5.51,
       "insurance_bipd": 1000000,
       "insurance_cargo": 250000,
+      "risk_score": 82,
+      "risk_grade": "B",
+      "risk_tier": "Good",
       "lat": 32.7767,
       "lon": -96.797
     }

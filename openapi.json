@@ -675,6 +675,111 @@
             "format": "date-time"
           }
         }
+      },
+      "CarrierSummary": {
+        "type": "object",
+        "description": "Compact carrier record returned by searchCarriers. Fields the API omits when empty are absent rather than null; the three risk fields are the exception and are always present.",
+        "properties": {
+          "dot_number": {
+            "type": "string"
+          },
+          "mc_number": {
+            "type": "string"
+          },
+          "legal_name": {
+            "type": "string"
+          },
+          "dba_name": {
+            "type": "string"
+          },
+          "city": {
+            "type": "string"
+          },
+          "state": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "entity_type": {
+            "type": "string"
+          },
+          "power_units": {
+            "type": "integer"
+          },
+          "drivers": {
+            "type": "integer"
+          },
+          "vehicle_oos_rate": {
+            "type": "number"
+          },
+          "vehicle_oos_national": {
+            "type": "number"
+          },
+          "driver_oos_rate": {
+            "type": "number"
+          },
+          "driver_oos_national": {
+            "type": "number"
+          },
+          "insurance_bipd": {
+            "type": "integer",
+            "description": "Max active BIPD coverage in dollars."
+          },
+          "insurance_cargo": {
+            "type": "integer",
+            "description": "Max active cargo coverage in dollars. Always 0 \u2014 FMCSA publishes CARGO filings with no dollar amount."
+          },
+          "risk_score": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "description": "Composite risk score 0-100, or null when the carrier has no computed score. 0 is a real score (the worst one), not a missing value \u2014 always test for null rather than falsiness."
+          },
+          "risk_grade": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Letter grade A-F derived from risk_score, or null when unscored."
+          },
+          "risk_tier": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Human-readable tier (Excellent, Good, Fair, Poor, Critical), or null when unscored."
+          },
+          "distance_miles": {
+            "type": "number",
+            "description": "Distance from the lat/lon in the request. Present only on geo searches."
+          },
+          "lat": {
+            "type": "number"
+          },
+          "lon": {
+            "type": "number"
+          }
+        }
+      },
+      "Pagination": {
+        "type": "object",
+        "properties": {
+          "page": {
+            "type": "integer"
+          },
+          "per_page": {
+            "type": "integer"
+          },
+          "total": {
+            "type": "integer",
+            "description": "Capped at 10000 for broad queries to avoid full table scans."
+          },
+          "total_pages": {
+            "type": "integer"
+          }
+        }
       }
     }
   },
@@ -846,20 +951,14 @@
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "results": {
+                    "data": {
                       "type": "array",
                       "items": {
-                        "$ref": "#/components/schemas/Carrier"
+                        "$ref": "#/components/schemas/CarrierSummary"
                       }
                     },
-                    "total": {
-                      "type": "integer"
-                    },
-                    "limit": {
-                      "type": "integer"
-                    },
-                    "offset": {
-                      "type": "integer"
+                    "pagination": {
+                      "$ref": "#/components/schemas/Pagination"
                     }
                   }
                 }
