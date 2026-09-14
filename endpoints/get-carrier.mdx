@@ -140,10 +140,13 @@ The `risk_score` object is a composite 0–100 trust score derived from three co
 | `grade` | string | Letter grade: `A` (≥90), `B` (≥80), `C` (≥65), `D` (≥45), `F` (<45) |
 | `tier` | string | Human label: `Excellent`, `Good`, `Fair`, `Poor`, `Critical` |
 | `confidence` | string | Data confidence: `high`, `medium`, or `low` (depends on how many signals the scoring engine had) |
-| `components` | array | Sub-score breakdown with `name`, `score`, and `weight` for Compliance, Safety, and Insurance |
+| `components` | array | Sub-score breakdown with `name`, `score`, and `weight` for Compliance, Safety, and Insurance. `weight` is the weight the component actually received — `0` when it was dropped from the average |
+| `cap` | object | Present only when a hard cap, not the components, produced `score`: `value` (the cap, equal to `score`), `reason` (the flag code that bound, e.g. `NO_BIPD`), and `uncapped_score` (the weighted average before the cap) |
 | `flags` | array | Notable conditions, each with `severity` (`critical`, `warning`, `info`), `code` (e.g. `PRIOR_REVOCATION`, `NO_BIPD`, `HIGH_DRIVER_OOS`, `STALE_MCS150`), and a human-readable `message` |
 
 Hard caps apply after scoring: inactive carriers are capped at 15, carriers with pending revocation at 35, active carriers with no BIPD insurance at 35, a detected chameleon link at 45, and carriers with a prior revocation at 55.
+
+The breakdown always reconstructs a number: when `cap` is absent, `sum(score × weight) / sum(weight)` rounds to `score`; when `cap` is present, it rounds to `cap.uncapped_score` and `score` equals `cap.value`. For example, a carrier whose components average 81 but has no active BIPD filing returns `"score": 35` with `"cap": { "value": 35, "reason": "NO_BIPD", "uncapped_score": 81 }`. If pending revocation and no BIPD both bind at 35, `reason` is `PENDING_REVOCATION`.
 
 <Note>
   Need to score against **stricter thresholds** than the federal minimums (e.g. require $1M BIPD)? Use [`POST /v1/carriers/{dot}/risk-score`](/endpoints/risk-score) with a custom policy body.
