@@ -5,9 +5,13 @@ description: Request rate limits and throttling behavior
 
 # Rate Limits
 
-Anonymous requests share a limit of **100 requests per minute** per client. Requests that carry an API key count against that key's own limit, which defaults to the same 100 requests per minute.
+Anonymous requests share a limit of **100 requests per minute** per client IP address (IPv6 addresses are grouped by /64). Requests that carry an API key count against your account's limit, which defaults to the same 100 requests per minute. The limit belongs to the account, not the key, so regenerating your key does not reset it.
 
 The credential endpoints are throttled separately and much harder: `POST /v1/auth/signup`, `/v1/auth/login`, `/v1/auth/forgot-password`, and `/v1/auth/reset-password` share a limit of **10 requests per minute**. If you are retrying a signup or login in a loop, that is the limit you will hit first.
+
+`GET /v1/auth/me` and `POST /v1/auth/regenerate-key` count against your account's limit like any other authenticated request.
+
+Invalid API keys are throttled too. After **10 requests with an invalid `X-API-Key` in one minute** from the same IP address, every request from that address that sends an `X-API-Key` header receives `429 RATE_LIMITED` until the minute is up, even if the key is valid. Requests without an `X-API-Key` header are not affected.
 
 `GET /v1/health` and `GET /v1/meta` are not rate limited at all.
 
@@ -23,3 +27,5 @@ Rate limited responses include these headers. The two unthrottled endpoints abov
 | `Retry-After` | Seconds to wait before retrying (only on `429` responses) |
 
 When you exceed the limit, the API returns a `429` status with error code `RATE_LIMITED`.
+
+A `429` caused by invalid API keys includes `Retry-After` but not the `X-RateLimit-*` headers.
