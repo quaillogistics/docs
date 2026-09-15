@@ -137,7 +137,7 @@ The `risk_score` object is a composite 0–100 trust score derived from three co
 | Field | Type | Description |
 |-------|------|-------------|
 | `score` | integer | Overall score from 0 (worst) to 100 (best) |
-| `grade` | string | Letter grade: `A` (≥90), `B` (≥80), `C` (≥65), `D` (≥45), `F` (<45) |
+| `grade` | string | Letter grade: `A` (≥90), `B` (≥80), `C` (≥65), `D` (≥45), `F` (\<45) |
 | `tier` | string | Human label: `Excellent`, `Good`, `Fair`, `Poor`, `Critical` |
 | `confidence` | string | Data confidence: `high`, `medium`, or `low` (depends on how many signals the scoring engine had) |
 | `components` | array | Sub-score breakdown with `name`, `score`, and `weight` for Compliance, Safety, and Insurance. `weight` is the weight the component actually received — `0` when it was dropped from the average |
